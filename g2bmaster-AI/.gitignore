@@ -3,6 +3,9 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
+# 매니페스트(package.json)도 없는 잔여 트리가 81M 쌓여 있었다. 재현도 관리도
+# 안 되는 것을 커밋하지 않도록 규칙을 둔다.
+node_modules/
 data/
 *.log
 .DS_Store
