@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    // baseUrl 은 두지 않는다 — TS 6.0 에서 폐기됐고 7.0 에서 사라진다(IDE 가 새 TS 를
+    // 쓰면 여기서 빨간 줄이 뜬다). TS 4.4 부터 paths 는 baseUrl 없이도 동작하고,
+    // 이 파일이 프로젝트 루트에 있으므로 "src/*" 의 해석 결과는 전과 같다.
+    // 번들러 쪽 별칭은 tsconfig 와 무관하게 vite.config.ts 의 resolve.alias 가 담당한다.
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    "types": ["vitest/globals", "@testing-library/jest-dom"]
+  },
+  "include": ["src"]
+}

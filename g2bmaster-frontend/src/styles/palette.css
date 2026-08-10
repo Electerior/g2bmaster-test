@@ -1,0 +1,168 @@
+/*
+ * 화면별 팔레트 — 원본 style.css 에 규칙마다 흩뿌려져 있던 색을 이름 붙여 모은 것.
+ *
+ * tokens.css 는 앱 전체가 쓰는 기본 토큰(브랜드색·표면·타이포)만 담는다. 여기 있는 것들은
+ * "이 배지/이 표/이 패널에서만" 쓰이는 색이라 성격이 다르다. 그렇다고 컴포넌트 CSS 안에
+ * 16진수로 박아 두면 원본이 그랬듯 색 하나 바꾸는 데 문자열 검색이 필요해진다.
+ * → 값은 전부 원본 그대로 두고, 이름만 붙여 한곳에 모은다.
+ */
+:root {
+  /* ── 출처 배지 (style.css:2021) ─────────────────────────────────────────── */
+  --source-g2b-fg: #174ea6;
+  --source-g2b-bg: #e8f0fe;
+  --source-g2b-border: #c7d8f7;
+  --source-d2b-fg: #7c2d12;
+  --source-d2b-bg: #fff7ed;
+  --source-d2b-border: #fed7aa;
+  --source-private-fg: #7c3aed;
+  --source-private-bg: #f3e8ff;
+
+  /* ── 공고 상태 배지 (style.css:2035) ────────────────────────────────────── */
+  --status-active-fg: #047857;
+  --status-active-bg: #ecfdf5;
+  --status-active-border: #a7f3d0;
+  --status-completed-fg: #475569;
+  --status-completed-bg: #f1f5f9;
+  --status-completed-border: #cbd5e1;
+  --status-cancelled-fg: #b42318;
+  --status-cancelled-bg: #fff1f2;
+  --status-cancelled-border: #fda4af;
+
+  /* ── 수주기회 배지 (style.css:1172) ─────────────────────────────────────── */
+  --opp-fg: #334155;
+  --opp-bg: #f8fafc;
+  --opp-border: #d8e1ef;
+  --opp-note-fg: #5b6b84;
+  --opp-s-fg: #c2410c;
+  --opp-s-bg: #fff7ed;
+  --opp-s-border: #fdba74;
+  --opp-a-fg: #047857;
+  --opp-a-bg: #ecfdf5;
+  --opp-a-border: #86efac;
+  --opp-b-fg: #1d4ed8;
+  --opp-b-bg: #eff6ff;
+  --opp-b-border: #bfdbfe;
+  --opp-c-fg: #475569;
+  --opp-c-bg: #f8fafc;
+  --opp-c-border: #cbd5e1;
+  --opp-d-fg: #6b7280;
+  --opp-d-bg: #f3f4f6;
+  --opp-d-border: #d1d5db;
+  --speclock-fg: #9f1239;
+  --speclock-bg: #fff1f2;
+  --speclock-border: #fb7185;
+
+  /* ── 제한/자격 태그 · 마감 배지 ────────────────────────────────────────── */
+  --reqtag-fg: #0f6b45;
+  --reqtag-bg: #eef6f1;
+  --reqtag-border: #cbe8d5;
+  --dday-expired-fg: #999999;
+  --dday-expired-bg: #f0f0f0;
+
+  /* ── 첨부 전수조사 결과 행 (style.css:1233) ─────────────────────────────── */
+  --file-match-rail: #a855f7;
+  --file-excerpt-bg: #fdf4ff;
+  --file-excerpt-fg: #4b5563;
+  --file-mark-bg: #e9d5ff;
+  --file-mark-fg: #5b21b6;
+
+  /* ── 입찰 불가 조항 '?' 표식 (style.css:1256) ───────────────────────────── */
+  --blocking-row-bg: #fff7ed;
+  --blocking-dot-bg: #c2410c;
+  --blocking-dot-open: #9a3412;
+  --blocking-pop-border: #fed7aa;
+  --blocking-pop-fg: #1f2937;
+  --blocking-excerpt-bg: #f8fafc;
+  --blocking-excerpt-fg: #475569;
+  --blocking-note-fg: #94a3b8;
+
+  /* ── 로딩 스켈레톤 ─────────────────────────────────────────────────────── */
+  --skeleton-a: #f0f3f8;
+  --skeleton-b: #e4e8f0;
+
+  /* ── 검색창 ────────────────────────────────────────────────────────────── */
+  --mode-tabs-bg: #f8fafc;
+  --mode-tab-hover: #eef4ff;
+  --quick-date-hover: #f7faff;
+  --bool-and-bg: #e8f0fe;
+  --bool-or-bg: #fff3e8;
+  --bool-not-bg: #fde8e8;
+  --bool-not-fg: #c0392b;
+  --bool-instt-bg: #e6f7f2;
+  --bool-instt-fg: #0d7b6a;
+  --bool-corp-bg: #f0eeff;
+  --bool-corp-fg: #5b21b6;
+  --bool-brn-bg: #fff7ed;
+  --bool-brn-fg: #92400e;
+  --bool-file-bg: #fdf4ff;
+  --bool-file-fg: #7c3aed;
+  --bool-officer-bg: #f0fdf4;
+  --bool-officer-fg: #15803d;
+  --bool-officer-border: #86efac;
+  --qtag-and-bg: #dce8fd;
+  --qtag-or-bg: #ffe8d6;
+  --qtag-not-bg: #ffdddd;
+  --qtag-file-bg: #f3e8ff;
+  --preset-chip-bg: #e8f0fe;
+  --preset-chip-border: #c5d8fb;
+  --preset-chip-hover: #d0e4fd;
+
+  /* ── 트렌드 ────────────────────────────────────────────────────────────── */
+  --trend-hairline: #edf2f8;
+  --trend-toolbar-bg: #f8fbff;
+  --trend-toolbar-border: #dbe7f6;
+  --trend-control-border: #bfd2ef;
+  --trend-control-focus: #b7cff9;
+  --trend-th-bg: #f8fafd;
+  --trend-th-fg: #51617a;
+  --trend-detail-bg: #fbfdff;
+  --trend-dup-bg: #fff4e8;
+  --trend-dup-fg: #c95d00;
+
+  /* ── 낙찰자 조회 (업체 프로파일) ───────────────────────────────────────── */
+  --corp-border: #e2e8f0;
+  --corp-head-from: #f0eeff;
+  --corp-head-to: #eff6ff;
+  --corp-name-fg: #1e1b4b;
+  --corp-stat-border: #c7d2fe;
+  --corp-stat-label: #5b21b6;
+  --corp-stat-val: #312e81;
+  --corp-th-bg: #f8f9fc;
+  --corp-td-border: #f1f5f9;
+  --corp-row-hover: #fafbff;
+  --corp-won-bg: #f0fdf4;
+  --corp-won-hover: #dcfce7;
+  --corp-line: #3b82f6;
+  --corp-dot-won: #22c55e;
+  --corp-dot-lost: #60a5fa;
+  --won-badge-fg: #15803d;
+  --won-badge-bg: #dcfce7;
+  --won-badge-border: #86efac;
+
+  /* ── 담당자 조회 ───────────────────────────────────────────────────────── */
+  --ofc-tel-fg: #1d4ed8;
+  --ofc-tel-bg: #eff6ff;
+  --ofc-tel-border: #bfdbfe;
+  --ofc-email-fg: #7c3aed;
+  --ofc-email-bg: #f5f3ff;
+  --ofc-email-border: #ddd6fe;
+  --ofc-goods-fg: #1d4ed8;
+  --ofc-goods-bg: #eff6ff;
+  --ofc-service-fg: #15803d;
+  --ofc-service-bg: #f0fdf4;
+  --ofc-works-fg: #c2410c;
+  --ofc-works-bg: #fff7ed;
+
+  /* ── 저장 공고 · 필드 세트 ─────────────────────────────────────────────── */
+  --ds-hero-bg: rgba(0, 0, 0, 0.02);
+  --ds-pending-fg: #b45309;
+  --gap-under-fg: #0f766e;
+  --gap-over-fg: #b91c1c;
+
+  /* ── 서랍 ──────────────────────────────────────────────────────────────── */
+  --drawer-raw-bg: #f8fafc;
+  --drawer-scrim: rgba(0, 0, 0, 0.4);
+  --coverage-note-fg: #8a5a00;
+  --spec-badge-fg: #92400e;
+  --spec-badge-bg: #fef3c7;
+}

@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://g2bmasters-open.vercel.app/sitemap.xml

@@ -1,0 +1,151 @@
+/*
+ * 전역 스타일 — 리셋 · 타이포그래피 · 레이아웃 · 공용 표면(surface/card/panel)만 둔다.
+ *
+ * 원본 style.css 는 2988줄짜리 단일 파일이라 "이 규칙이 어느 화면 것인가"를 알 수 없었다.
+ * 기능별 스타일은 해당 컴포넌트 옆으로 가고, 여기에는 화면 전체가 공유하는 것만 남긴다.
+ */
+@import './tokens.css';
+/* 화면별 팔레트. tokens.css 를 건드리지 않고 원본의 국소 색을 이름 붙여 모아 둔 것. */
+@import './palette.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  /* Soft Glass 캔버스 — 유리 표면(검색바·드로어)이 그 위에 떠 보이게 하는 옅은 그라데이션.
+   * 스크롤해도 배경이 같이 흐르지 않도록 fixed. 표·패널은 여전히 불투명 흰색이다. */
+  background: var(--app-canvas) fixed;
+  color: var(--text);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  /* 원본과 동일 — 표가 min-width 1580px 라 body 가 가로로 밀리는 것을 막는다. */
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+h1 {
+  font-size: var(--fs-h1);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* ─── 레이아웃 ────────────────────────────────────────────────────────────── */
+main {
+  max-width: var(--main-max-width);
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* ─── 공용 표면 ───────────────────────────────────────────────────────────── */
+/* 원본의 모든 패널은 "surface + 1px border + radius" 라는 같은 규칙을 반복 선언했다. */
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+
+/* 탭 아래에 붙는 결과 영역 — 위 모서리는 탭과 이어지므로 각지게 둔다. */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+  min-height: 200px;
+  padding: 16px;
+}
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.meta {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+/* 상태 줄 — 원본 .status-bar */
+.status-bar {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.status-bar.error {
+  color: var(--error);
+}
+
+/* 빈 결과 — 원본 .empty-msg */
+.empty-msg {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* 스크린리더 전용. 원본은 aria-label 만 썼지만 시각적 제목이 필요한 곳이 생긴다. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 760px) {
+  body {
+    font-size: var(--fs-base-sm);
+  }
+  main {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px 10px 20px;
+  }
+}

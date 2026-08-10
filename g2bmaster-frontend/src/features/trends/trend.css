@@ -1,0 +1,353 @@
+/*
+ * 트렌드 화면 — 원본 style.css 의 .trend-* 블록.
+ */
+
+.trend-panel {
+  padding-top: 12px;
+}
+
+.trend-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.trend-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 12px;
+  min-height: 92px;
+}
+.trend-card span,
+.trend-card small {
+  display: block;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+.trend-card strong {
+  display: block;
+  margin: 8px 0 4px;
+  color: var(--ink);
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.trend-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.trend-keyword-btn {
+  border: 1px solid var(--preset-chip-border);
+  background: var(--preset-chip-bg);
+  color: var(--primary);
+  border-radius: 16px;
+  padding: 5px 10px;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  cursor: pointer;
+}
+.trend-keyword-btn:hover {
+  border-color: var(--primary);
+  background: var(--qtag-and-bg);
+}
+
+.trend-layout {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.trend-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 12px;
+  min-width: 0;
+}
+.trend-section h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: var(--ink);
+  font-size: var(--fs-base);
+}
+.trend-section h3 small {
+  color: var(--muted);
+  font-size: var(--fs-badge);
+  font-weight: 700;
+}
+.trend-wide {
+  grid-column: span 2;
+}
+
+/* ── 일자별 표 ─────────────────────────────────────────────────────────── */
+.trend-day-table-wrap {
+  margin-top: 12px;
+  padding-top: 10px;
+  overflow-x: auto;
+  border-top: 1px solid var(--trend-hairline);
+}
+.trend-day-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--trend-toolbar-border);
+  border-radius: var(--radius);
+  background: var(--trend-toolbar-bg);
+}
+.trend-day-toolbar-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 180px;
+}
+.trend-day-toolbar-title strong {
+  color: var(--ink);
+  font-size: var(--fs-meta);
+}
+.trend-day-toolbar-title span {
+  color: var(--muted);
+  font-size: var(--fs-badge);
+  font-weight: 700;
+}
+.trend-day-toolbar label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: var(--fs-badge);
+  font-weight: 800;
+  white-space: nowrap;
+}
+.trend-day-control {
+  height: 30px;
+  min-width: 122px;
+  padding: 0 28px 0 10px;
+  border: 1px solid var(--trend-control-border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: var(--fs-meta);
+  font-weight: 800;
+  cursor: pointer;
+}
+.trend-day-control:focus {
+  outline: 2px solid var(--trend-control-focus);
+  outline-offset: 1px;
+}
+.trend-day-table {
+  width: 100%;
+  min-width: 420px;
+  border-collapse: collapse;
+  font-size: var(--fs-meta);
+}
+.trend-day-table th,
+.trend-day-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--trend-hairline);
+  text-align: right;
+  white-space: nowrap;
+}
+.trend-day-table th:first-child,
+.trend-day-table td:first-child {
+  text-align: left;
+}
+.trend-day-table th {
+  color: var(--trend-th-fg);
+  background: var(--trend-th-bg);
+  font-weight: 800;
+}
+.trend-day-table td:first-child {
+  color: var(--muted);
+  font-weight: 700;
+}
+.trend-day-table td strong {
+  display: block;
+  color: var(--ink);
+  font-size: var(--fs-meta);
+}
+.trend-day-table td small {
+  display: block;
+  margin-top: 2px;
+  color: var(--accent);
+  font-weight: 800;
+}
+.trend-day-toggle {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  max-width: 100%;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  text-align: right;
+}
+.trend-day-toggle:hover,
+.trend-day-toggle[aria-expanded='true'] {
+  background: var(--blue-soft);
+}
+.trend-day-amount {
+  margin-left: auto;
+  padding: 3px 6px;
+  color: var(--ink);
+}
+.trend-day-detail td {
+  padding: 0 8px 10px;
+  background: var(--trend-detail-bg);
+  text-align: left;
+}
+.trend-day-notices {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--trend-hairline);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.trend-day-notice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px;
+  align-items: start;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--trend-hairline);
+}
+.trend-day-notice:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.trend-day-notice p,
+.trend-day-more {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+.trend-day-dup {
+  border-radius: 999px;
+  background: var(--trend-dup-bg);
+  color: var(--trend-dup-fg);
+  font-size: var(--fs-badge);
+  font-weight: 800;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+.trend-day-empty {
+  padding: 12px;
+}
+
+/* ── 순위 목록 · 공고 목록 ─────────────────────────────────────────────── */
+.trend-rank-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.trend-rank-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--fs-meta);
+}
+.trend-rank-list li > span,
+.trend-rank-list li > button {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trend-rank-list strong {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+.trend-notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.trend-notice {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid var(--trend-hairline);
+  padding-top: 8px;
+}
+.trend-notice:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.trend-open-btn {
+  max-width: 100%;
+  border: none;
+  background: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: var(--fs-table);
+  font-weight: 700;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trend-open-btn:hover {
+  text-decoration: underline;
+}
+.trend-notice p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trend-notice > span {
+  color: var(--accent);
+  font-size: var(--fs-meta);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .trend-summary-grid,
+  .trend-layout {
+    grid-template-columns: 1fr;
+  }
+  .trend-wide {
+    grid-column: span 1;
+  }
+  .trend-card {
+    min-height: 78px;
+  }
+  .trend-card strong {
+    font-size: 21px;
+  }
+  .trend-day-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .trend-day-toolbar label {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .trend-day-control {
+    min-width: 170px;
+  }
+  .trend-notice {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}

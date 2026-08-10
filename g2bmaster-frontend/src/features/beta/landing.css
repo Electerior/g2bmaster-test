@@ -1,0 +1,456 @@
+/*
+ * G2B MASTERS 베타 랜딩 스타일.
+ *
+ * 원본은 페이지를 통째로 차지하는 정적 HTML 용이라 :root · body · html · 요소 셀렉터를
+ * 전역에 깔았다. 이 저장소는 화면 15개가 CSS 번들 하나를 공유하므로, 전부 .beta-landing
+ * 아래로 가뒀다. 클래스명은 원본 그대로다 — 마크업과 대조할 수 있어야 한다.
+ *
+ * 특히 되돌리면 안 되는 것 두 가지:
+ *  - :root 토큰의 --ink 가 tokens.css 의 --ink 와 이름이 겹친다. 전역으로 풀면 앱 전체
+ *    버튼 색이 바뀐다.
+ *  - .card / .panel 은 global.css 에도 있다. 스코프가 없으면 서로를 덮어쓴다.
+ */
+
+
+/* ============================================================
+   G2B MASTERS — 베타 랜딩 스타일
+   HTML 원본에서 그대로 이식했습니다. 클래스명은 바꾸지 않았습니다.
+   Pretendard 폰트는 index.html에서 로드합니다.
+   ============================================================ */
+/* ============================================================
+   TOKENS
+   ============================================================ */
+.beta-landing{
+  --ink:#080807;
+  --ink-2:#0F0E0C;
+  --gold:#FFC93C;
+  --gold-soft:#FFD97A;
+  --gold-deep:#D99A0B;
+  --line:rgba(255,255,255,0.12);
+  --line-gold:rgba(255,201,60,0.30);
+  --tx:#ffffff;
+  --tx-2:rgba(255,255,255,0.70);
+  --tx-3:rgba(255,255,255,0.45);
+  --glass:linear-gradient(150deg,rgba(255,255,255,0.055) 0%,rgba(255,255,255,0.015) 45%,rgba(255,201,60,0.035) 100%);
+  --e:cubic-bezier(.22,1,.36,1);
+  --mono:'SF Mono',ui-monospace,'Menlo','Consolas',monospace;
+  --pad:clamp(24px,6.2vw,96px);
+  --gap:clamp(20px,2.4vw,32px);
+  --sec:clamp(110px,14vw,208px);
+}
+
+/* ============================================================
+   앱 전역 스타일 차단
+
+   스코프(.beta-landing)는 랜딩이 밖으로 새는 것만 막는다. 반대 방향 — global.css 가
+   랜딩 안으로 들어오는 것 — 은 막지 못한다. .card 와 .panel 이 양쪽에 다 있어서
+   랜딩의 유리질 패널이 앱의 흰 카드로 덮인다(.panel 은 배경을 아예 선언하지 않으므로
+   흰 배경 + 흰 글씨가 되어 본문이 통째로 사라진다).
+
+   아래에서 global.css 가 두 클래스에 주는 것(background·border·radius·padding·
+   min-height)을 되돌리고, 랜딩 고유 규칙이 뒤에서 다시 선언한다.
+   global.css 의 .card/.panel 에 속성이 추가되면 여기도 같이 늘려야 한다.
+   ============================================================ */
+.beta-landing .card,
+.beta-landing .panel{background:none;border:0;border-radius:0;min-height:0;padding:0}
+
+/* grid/flex 자식이 내용 최소폭 때문에 컨테이너를 뚫고 나가는 것을 막습니다 */
+.beta-landing .apply>*,.beta-landing .feat>*,.beta-landing .charts>*,.beta-landing .bene>*,.beta-landing .fields>*,.beta-landing .gostop>*,.beta-landing .row>*{min-width:0}
+.beta-landing input,.beta-landing select,.beta-landing textarea{max-width:100%;min-width:0}
+.beta-landing{
+  /* 원본에서는 body 규칙이었다. 이제 랜딩 루트 div 가 받는다 —
+     min-height 를 주지 않으면 짧은 뷰포트에서 아래쪽에 global.css 의 밝은 --bg 가 비친다. */
+  min-height:100vh;
+  margin:0; padding:0;
+  background:#000;
+  font-family:'Pretendard Variable',-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+  color:var(--tx);
+  font-feature-settings:"tnum" on;
+  -webkit-font-smoothing:antialiased;
+  word-break:keep-all;
+}
+
+
+/* [1] 프레임드 뷰포트 — 페이지 전체를 라운드 카드 안에 담습니다 */
+.beta-landing .frame{
+  margin:clamp(8px,1.6vw,22px);
+  border-radius:clamp(14px,2.2vw,32px);
+  overflow:clip;
+  position:relative;
+  background:linear-gradient(180deg,#050504 0%,#121110 22%,#0B0B0A 55%,#100E0B 82%,#070706 100%);
+}
+
+
+/* 배경 레이어 */
+.beta-landing .grid-bg{position:absolute;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:72px 72px;
+  -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.4) 30%,rgba(0,0,0,.08) 70%,transparent 100%);
+  mask-image:linear-gradient(180deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.4) 30%,rgba(0,0,0,.08) 70%,transparent 100%)}
+.beta-landing .aura{position:absolute;border-radius:999px;pointer-events:none;z-index:0}
+@keyframes auraA{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(60px,-40px,0) scale(1.12)}}
+@keyframes auraB{from{transform:translate3d(0,0,0) scale(1.08)}to{transform:translate3d(-70px,50px,0) scale(1)}}
+
+.beta-landing .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding-left:var(--pad);padding-right:var(--pad);width:100%}
+
+
+/* ============================================================
+   [2] 모션 프리미티브 — 페이지 전체가 이 하나의 규칙만 씁니다
+   ============================================================ */
+.beta-landing [data-reveal],.beta-landing [data-hero]{
+  opacity:0; filter:blur(12px); transform:translateY(26px);
+  transition:opacity .85s var(--e),filter .85s var(--e),transform .85s var(--e);
+  transition-delay:var(--d,0ms);
+}
+.beta-landing [data-reveal].is-in,.beta-landing [data-hero].is-in{opacity:1;filter:blur(0);transform:none}
+
+@media (prefers-reduced-motion:reduce){
+  .beta-landing [data-reveal],.beta-landing [data-hero],.beta-landing .hero-stage-in{opacity:1!important;filter:none!important;transform:none!important;transition:none!important}
+  .beta-landing .aura,.beta-landing .marquee-track{animation:none!important}
+  .beta-landing .hero-inner{opacity:1!important;filter:none!important}
+  /*
+    useGrow 가 채우는 막대들. 최종 크기는 JS 가 인라인 style 로 넣고 여기 transition 이
+    실제 움직임을 만든다 — 즉 이 두 줄이 없으면 감소 모션 설정에서도 막대만 자란다.
+    같은 위젯의 숫자(useCountUp)는 JS 쪽에서 이미 즉시 최종값으로 끝내므로, 막대는 1.2초
+    동안 자라고 숫자는 가만히 있는 어긋난 상태가 된다.
+  */
+  .beta-landing .bar i,.beta-landing .slots-bar i{transition:none!important}
+}
+
+
+/* ============================================================
+   NAV — 스크롤하면 나타나는 sticky 바
+   ============================================================ */
+.beta-landing .nav{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;
+  gap:16px;padding:18px var(--pad);
+  border-bottom:1px solid transparent;transition:.4s var(--e)}
+.beta-landing .nav.solid{background:rgba(8,8,7,.94);backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);border-bottom-color:var(--line)}
+.beta-landing .logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;letter-spacing:-.02em}
+.beta-landing .logo i{width:19px;height:19px;border:2px solid #fff;border-left-color:var(--gold);border-radius:4px;transform:rotate(14deg);display:inline-block}
+.beta-landing .nav-slots{font-family:var(--mono);font-size:12px;color:var(--tx-3);letter-spacing:.02em}
+.beta-landing .nav-slots b{color:var(--gold-soft);font-weight:700}
+
+
+/* 버튼 */
+.beta-landing .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:15px 28px;border:0;border-radius:8px;cursor:pointer;
+  font-size:15px;font-weight:800;letter-spacing:-.01em;
+  background:var(--gold);color:#1A1400;
+  transition:transform .3s var(--e),box-shadow .3s var(--e),background .2s}
+.beta-landing .btn:hover{background:#FFD457;transform:translateY(-2px);box-shadow:0 12px 28px -10px rgba(255,201,60,.7)}
+.beta-landing .btn:active{transform:translateY(0)}
+.beta-landing .btn.sm{padding:9px 16px;font-size:13px;border-radius:7px}
+.beta-landing .btn.ghost{background:transparent;color:var(--tx);border:1px solid var(--line)}
+.beta-landing .btn.ghost:hover{background:rgba(255,255,255,.06);box-shadow:none}
+.beta-landing :focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
+
+
+/* ============================================================
+   [3] HERO — 줄단위 스태거 + 하단에서 솟는 제품 목업
+   ============================================================ */
+.beta-landing .hero{position:relative;z-index:1;padding-top:clamp(56px,9vw,120px);overflow:hidden}
+.beta-landing .hero-inner{position:relative;z-index:2;text-align:center;max-width:860px;margin:0 auto;
+  padding:0 var(--pad);display:flex;flex-direction:column;align-items:center;gap:clamp(24px,3vw,34px);
+  will-change:opacity,filter}
+.beta-landing .eyebrow{display:inline-flex;align-items:center;gap:10px;padding:6px 8px 6px 14px;
+  border:1px solid var(--line-gold);border-radius:999px;background:rgba(255,201,60,.06)}
+.beta-landing .eyebrow em{font-style:normal;font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--gold-soft)}
+.beta-landing .eyebrow s{text-decoration:none;font-family:var(--mono);font-size:11.5px;font-weight:600;color:var(--tx-2);
+  padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.07)}
+.beta-landing h1.hero-h{margin:0;font-size:clamp(32px,5.2vw,64px);font-weight:800;line-height:1.24;letter-spacing:-.04em}
+.beta-landing h1.hero-h .ln{display:block}
+.beta-landing h1.hero-h .hl{color:var(--gold)}
+.beta-landing .hero-sub{margin:0;font-size:clamp(15px,1.8vw,18px);font-weight:500;line-height:1.85;color:var(--tx-2);max-width:600px}
+.beta-landing .hero-cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center;margin-top:6px}
+.beta-landing .fee0{display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:999px;
+  border:1px solid var(--line-gold);background:rgba(255,201,60,.07);
+  font-size:14px;font-weight:700;color:var(--tx);box-shadow:0 0 30px -14px rgba(255,201,60,.8)}
+.beta-landing .fee0 b{color:var(--gold);font-size:15px}
+.beta-landing .countdown{font-family:var(--mono);font-size:12.5px;color:var(--tx-3)}
+.beta-landing .countdown b{color:var(--gold-soft);font-weight:700}
+
+
+/* 목업: 아래가 잘려서 "더 있다"는 신호를 줍니다 */
+.beta-landing .hero-stage{position:relative;margin-top:clamp(56px,8vw,110px);padding:0 calc(var(--pad) + clamp(0px,2vw,44px));
+  -webkit-mask-image:linear-gradient(180deg,#000 62%,rgba(0,0,0,.55) 84%,transparent 100%);
+  mask-image:linear-gradient(180deg,#000 62%,rgba(0,0,0,.55) 84%,transparent 100%)}
+.beta-landing .hero-stage-in{max-width:1000px;margin:0 auto;
+  opacity:0;transform:translateY(70px) scale(.97);filter:blur(14px);
+  transition:opacity 1.1s var(--e) .55s,transform 1.1s var(--e) .55s,filter 1.1s var(--e) .55s}
+.beta-landing .hero-stage-in.is-in{opacity:1;transform:none;filter:blur(0)}
+
+
+/* ---- 제품 목업(순수 CSS) ---- */
+.beta-landing .app{border:1px solid var(--line);border-radius:16px 16px 0 0;overflow:hidden;
+  background:linear-gradient(180deg,#141310,#0C0B09);
+  box-shadow:0 -1px 0 rgba(255,255,255,.09) inset,0 40px 90px -30px rgba(0,0,0,.9),0 0 90px -40px rgba(255,201,60,.45)}
+.beta-landing .app-bar{display:flex;align-items:center;gap:8px;padding:14px 22px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.03)}
+.beta-landing .dot{width:9px;height:9px;border-radius:999px;background:rgba(255,255,255,.16)}
+.beta-landing .app-title{margin-left:8px;font-size:12px;font-weight:700;color:var(--tx-3);letter-spacing:-.01em}
+.beta-landing .app-body{display:grid;grid-template-columns:214px 1fr;min-height:390px}
+.beta-landing .app-side{border-right:1px solid var(--line);padding:24px 18px;display:flex;flex-direction:column;gap:8px}
+.beta-landing .side-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--tx-3);margin-bottom:5px}
+.beta-landing .side-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--tx-2)}
+.beta-landing .side-item.on{background:rgba(255,201,60,.13);color:var(--gold-soft)}
+.beta-landing .side-item s{text-decoration:none;font-family:var(--mono);font-size:11px;color:var(--tx-3)}
+.beta-landing .app-main{padding:24px 26px;display:flex;flex-direction:column;gap:13px;text-align:left}
+.beta-landing .app-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+.beta-landing .app-head h4{margin:0;font-size:14px;font-weight:800;letter-spacing:-.02em}
+.beta-landing .app-head span{font-family:var(--mono);font-size:11px;color:var(--tx-3)}
+.beta-landing .row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+  padding:16px 18px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025)}
+.beta-landing .row.hot{border-color:var(--line-gold);background:rgba(255,201,60,.06)}
+.beta-landing .row-meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-family:var(--mono);font-size:10.5px;color:var(--tx-3);margin-bottom:5px}
+.beta-landing .row-meta .dday{color:#FF9B6A}
+.beta-landing .row-t{font-size:13px;font-weight:700;letter-spacing:-.01em;line-height:1.45}
+.beta-landing .row-t + .row-price{margin-top:5px;font-family:var(--mono);font-size:11.5px;color:var(--tx-2)}
+.beta-landing .score{text-align:center;flex:none}
+.beta-landing .score b{display:block;font-family:var(--mono);font-size:17px;font-weight:800;color:var(--gold);line-height:1}
+.beta-landing .score s{text-decoration:none;font-size:10px;color:var(--tx-3)}
+.beta-landing .bar-mini{width:56px;height:4px;border-radius:99px;background:rgba(255,255,255,.12);margin-top:6px;overflow:hidden}
+.beta-landing .bar-mini i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-deep),var(--gold))}
+
+
+/* ============================================================
+   섹션 공통
+   ============================================================ */
+.beta-landing section{position:relative;z-index:1}
+.beta-landing .sec{padding-top:var(--sec);padding-bottom:var(--sec)}
+.beta-landing .sec-head{max-width:640px;display:flex;flex-direction:column;gap:16px;margin-bottom:clamp(44px,6vw,76px)}
+.beta-landing .kicker{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-soft)}
+.beta-landing h2{margin:0;font-size:clamp(26px,3.6vw,40px);font-weight:800;letter-spacing:-.035em;line-height:1.28}
+.beta-landing .lead{margin:0;font-size:clamp(14.5px,1.6vw,16.5px);font-weight:500;line-height:1.85;color:var(--tx-2)}
+.beta-landing .card{border:1px solid var(--line);border-radius:14px;background:var(--glass);
+  backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13)}
+.beta-landing .card.gold{border-color:var(--line-gold)}
+.beta-landing .note{margin:clamp(36px,4.5vw,60px) 0 0;max-width:920px;font-size:11.5px;font-weight:500;line-height:1.85;color:rgba(255,255,255,.38)}
+
+
+/* ============================================================
+   [4] DECISION — sticky 헤더 띠 + Go/Stop 결정 화면
+   ============================================================ */
+.beta-landing .pin{position:sticky;top:92px;z-index:20;margin-bottom:clamp(28px,3.5vw,44px);
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  background:linear-gradient(120deg,rgba(255,201,60,.10),rgba(255,255,255,.035)),#131210;
+  box-shadow:0 18px 40px -22px rgba(0,0,0,.9);
+  padding:clamp(26px,3.4vw,40px) clamp(26px,3.4vw,44px)}
+.beta-landing .pin .kicker{margin-bottom:12px;display:block}
+.beta-landing .pin h2{font-size:clamp(21px,2.9vw,32px);line-height:1.32}
+
+
+/* 서비스가 끝낸 일 — 작고 조용하게 */
+.beta-landing .done{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.beta-landing .done-t{font-size:13px;font-weight:600;color:var(--tx-3);margin-right:6px;white-space:nowrap}
+.beta-landing .done-i{display:inline-flex;align-items:center;gap:9px;padding:10px 17px;border-radius:999px;
+  border:1px solid var(--line);background:rgba(255,255,255,.03);
+  font-size:13.5px;font-weight:600;color:var(--tx-2)}
+.beta-landing .done-i::before{content:"✓";color:var(--gold);font-weight:800;font-size:12px;line-height:1}
+
+
+/* 결정 화면 */
+.beta-landing .decide{padding:clamp(26px,3.4vw,44px);display:flex;flex-direction:column;
+  gap:clamp(24px,3vw,32px)}
+.beta-landing .decide-meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);
+  font-size:11.5px;color:var(--tx-3);margin-bottom:12px}
+.beta-landing .decide-meta .dday{color:#FF9B6A}
+.beta-landing .decide h3{margin:0;font-size:clamp(19px,2.4vw,27px);font-weight:800;letter-spacing:-.03em;line-height:1.4}
+.beta-landing .facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.beta-landing .fact{padding:9px 15px;border-radius:8px;background:rgba(255,255,255,.05);
+  font-size:13px;font-weight:600;color:var(--tx-2)}
+.beta-landing .fact b{font-family:var(--mono);font-weight:800;color:var(--gold);margin-left:5px}
+.beta-landing .decide-rule{height:1px;background:rgba(255,255,255,.1);margin:0}
+
+.beta-landing .gostop{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,2vw,20px)}
+.beta-landing .gs{border:0;cursor:pointer;border-radius:14px;font-family:inherit;
+  padding:clamp(24px,3vw,34px);display:flex;flex-direction:column;align-items:center;gap:8px;
+  transition:transform .3s var(--e),box-shadow .3s var(--e),background .2s}
+.beta-landing .gs em{font-style:normal;font-family:var(--mono);font-weight:800;line-height:1;
+  font-size:clamp(30px,4vw,44px);letter-spacing:-.02em}
+.beta-landing .gs span{font-size:14.5px;font-weight:700}
+.beta-landing .gs small{font-size:12.5px;font-weight:500;opacity:.66}
+.beta-landing .gs.go{background:var(--gold);color:#1A1400}
+.beta-landing .gs.go:hover{transform:translateY(-3px);box-shadow:0 20px 44px -14px rgba(255,201,60,.75)}
+.beta-landing .gs.stop{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--tx-2)}
+.beta-landing .gs.stop em{color:rgba(255,255,255,.5)}
+.beta-landing .gs.stop:hover{transform:translateY(-3px);background:rgba(255,255,255,.09)}
+
+
+/* ============================================================
+   [5] FEATURES — 자동 순환 탭 (레퍼런스 핵심 이식)
+   ============================================================ */
+.beta-landing .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:0 clamp(16px,2.5vw,40px);border-bottom:1px solid var(--line);margin-bottom:clamp(40px,5.5vw,72px)}
+.beta-landing .tab{position:relative;background:none;border:0;cursor:pointer;text-align:left;padding:0 0 20px;color:var(--tx-3);
+  transition:color .4s var(--e)}
+.beta-landing .tab strong{display:block;font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
+.beta-landing .tab span{display:block;font-size:12px;font-weight:500}
+.beta-landing .tab.on{color:var(--tx)}
+.beta-landing .tab.on span{color:var(--tx-2)}
+.beta-landing .tab::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:0;background:var(--gold);border-radius:2px}
+.beta-landing .tab.on::after{width:100%;transition:width var(--tabdur,4200ms) linear}
+.beta-landing .tab.on.paused::after{transition:none}
+
+.beta-landing .feat{display:grid;grid-template-columns:1fr 1.05fr;gap:clamp(36px,6vw,96px);align-items:center;min-height:440px}
+.beta-landing .panel{display:none;flex-direction:column;gap:20px;align-items:flex-start}
+.beta-landing .panel.on{display:flex;animation:panelIn .6s var(--e) both}
+@keyframes panelIn{from{opacity:0;filter:blur(10px);transform:translateY(16px)}to{opacity:1;filter:blur(0);transform:none}}
+.beta-landing .panel h3{margin:0;font-size:clamp(22px,2.8vw,30px);font-weight:800;letter-spacing:-.03em}
+.beta-landing .panel p{margin:0;font-size:15px;font-weight:500;line-height:1.9;color:var(--tx-2)}
+.beta-landing .panel ul{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:13px}
+.beta-landing .panel li{display:flex;gap:9px;font-size:14px;font-weight:500;color:var(--tx-2);line-height:1.6}
+.beta-landing .panel li::before{content:"";flex:none;width:5px;height:5px;border-radius:99px;background:var(--gold);margin-top:8px}
+
+
+/* 우측 목업 프레임: 배경은 고정, 안쪽 내용만 교체 → 하나의 제품으로 인지 */
+.beta-landing .visual{position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  background:radial-gradient(120% 100% at 70% 0%,rgba(255,201,60,.12),transparent 60%),linear-gradient(180deg,#141310,#0A0908);
+  box-shadow:0 30px 70px -30px rgba(0,0,0,.9);padding:clamp(22px,2.6vw,32px);min-height:420px;display:flex;flex-direction:column}
+.beta-landing .vpane{display:none;flex-direction:column;gap:11px;flex:1}
+.beta-landing .vpane.on{display:flex;animation:panelIn .6s var(--e) .08s both}
+.beta-landing .vrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 17px;
+  border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.03);font-size:12.5px}
+.beta-landing .vrow em{font-style:normal;font-weight:600;color:var(--tx-2)}
+.beta-landing .vrow s{text-decoration:none;font-family:var(--mono);font-size:11px;color:var(--gold-soft)}
+.beta-landing .vrow.ok{border-color:var(--line-gold);background:rgba(255,201,60,.07)}
+.beta-landing .vhead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+.beta-landing .vhead b{font-size:12.5px;font-weight:800}
+.beta-landing .vhead s{text-decoration:none;font-family:var(--mono);font-size:10.5px;color:var(--tx-3)}
+.beta-landing .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:20px}
+.beta-landing .chip{padding:5px 10px;border-radius:999px;border:1px solid var(--line);font-family:var(--mono);font-size:10.5px;color:var(--tx-3)}
+.beta-landing .chip.on{border-color:var(--line-gold);color:var(--gold-soft);background:rgba(255,201,60,.08)}
+.beta-landing .dist{display:flex;align-items:flex-end;gap:5px;height:120px;margin-top:6px}
+.beta-landing .dist i{flex:1;border-radius:3px 3px 0 0;background:rgba(255,255,255,.14)}
+.beta-landing .dist i.hit{background:linear-gradient(180deg,var(--gold),var(--gold-deep))}
+
+
+/* ============================================================
+   [6] RESULTS — 스크롤 진입 시 막대가 자라고 숫자가 올라갑니다
+   ============================================================ */
+.beta-landing .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--gap)}
+.beta-landing .chart{padding:clamp(26px,3.2vw,40px);display:flex;flex-direction:column;gap:32px}
+.beta-landing .chart-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.beta-landing .chart-top strong{font-size:15.5px;font-weight:700}
+.beta-landing .delta{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--gold-soft)}
+.beta-landing .bars{display:flex;align-items:flex-end;gap:clamp(28px,4vw,56px);height:190px;padding:0 clamp(0px,2vw,28px)}
+.beta-landing .bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:10px;height:100%}
+.beta-landing .bar em{font-style:normal;font-family:var(--mono);font-size:19px;font-weight:800;color:rgba(255,255,255,.75)}
+.beta-landing .bar.hi em{color:var(--gold)}
+.beta-landing .bar i{display:block;width:100%;height:0;border-radius:6px 6px 0 0;background:rgba(255,255,255,.14);
+  transition:height 1.2s var(--e)}
+.beta-landing .bar.hi i{background:linear-gradient(180deg,var(--gold) 0%,var(--gold-deep) 100%)}
+.beta-landing .bar span{font-size:12.5px;font-weight:500;color:var(--tx-3)}
+
+/* ============================================================
+   FEEDBACK — 마퀴 (hover 시 정지)
+   ============================================================ */
+@keyframes mR{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+@keyframes mL{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.beta-landing .marquee{overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
+.beta-landing .marquee + .marquee{margin-top:var(--gap)}
+.beta-landing .marquee-track{display:flex;gap:var(--gap);width:max-content}
+.beta-landing .marquee:hover .marquee-track{animation-play-state:paused}
+.beta-landing .rev{flex:none;width:min(400px,80vw);padding:32px;display:flex;flex-direction:column;gap:22px;
+  border:1px solid var(--line);border-radius:14px;background:var(--glass);
+  backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.beta-landing .stars{color:var(--gold-soft);font-size:14px;letter-spacing:2px}
+.beta-landing .rev p{margin:0;font-size:14.5px;font-weight:500;line-height:1.9;color:rgba(255,255,255,.86)}
+.beta-landing .who{display:flex;align-items:center;gap:12px;margin-top:auto}
+.beta-landing .who i{width:36px;height:36px;border-radius:999px;background:rgba(255,201,60,.16);color:var(--gold-soft);
+  display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:14px;flex:none}
+.beta-landing .who b{display:block;font-size:13.5px;font-weight:700}
+.beta-landing .who s{text-decoration:none;display:block;font-size:12.5px;font-weight:500;color:var(--tx-3)}
+
+
+/* BENEFITS */
+.beta-landing .bene{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:var(--gap)}
+.beta-landing .bene .card{padding:clamp(26px,3.2vw,38px);display:flex;flex-direction:column;gap:14px}
+.beta-landing .bene h3{margin:0;font-size:17.5px;font-weight:700}
+.beta-landing .bene p{margin:0;font-size:14.5px;font-weight:500;line-height:1.85;color:var(--tx-2)}
+.beta-landing .bene .num{font-family:var(--mono);font-size:11px;color:var(--gold-soft);letter-spacing:.1em}
+
+
+/* ============================================================
+   [7] APPLY — 폼은 설득 이후, 2×2 배치
+   ============================================================ */
+.beta-landing .apply{display:grid;grid-template-columns:minmax(0,.92fr) minmax(360px,1.08fr);gap:clamp(40px,6vw,96px);align-items:start}
+.beta-landing .form-card{padding:clamp(28px,3.4vw,44px);display:flex;flex-direction:column;gap:24px;position:relative}
+.beta-landing .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(clamp(150px,42%,200px),1fr));gap:18px 20px}
+.beta-landing label.f{display:flex;flex-direction:column;gap:8px;min-width:0}
+.beta-landing label.f>span{font-size:12.5px;font-weight:700;color:rgba(255,255,255,.86)}
+.beta-landing input[type=text],.beta-landing input[type=email],.beta-landing input[type=tel]{width:100%;height:48px;padding:0 16px;border:1px solid rgba(255,255,255,.18);
+  border-radius:8px;background:rgba(255,255,255,.06);color:#fff;font-size:14.5px;font-family:inherit;
+  transition:border-color .2s,box-shadow .2s}
+.beta-landing input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,201,60,.28)}
+.beta-landing input::placeholder{color:rgba(255,255,255,.32)}
+.beta-landing .agree{display:flex;align-items:flex-start;gap:9px;font-size:13px;font-weight:500;line-height:1.6;color:var(--tx-2)}
+.beta-landing .agree input{margin-top:3px;width:15px;height:15px;accent-color:var(--gold);flex:none}
+.beta-landing .form-note{margin:0;font-size:12px;color:var(--tx-3);line-height:1.6}
+.beta-landing .ok{position:absolute;inset:0;border-radius:14px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:rgba(10,9,8,.94);backdrop-filter:blur(6px);text-align:center;padding:30px}
+.beta-landing .ok.show{display:flex}
+.beta-landing .ok svg{width:56px;height:56px}
+.beta-landing .ok circle,.beta-landing .ok path{fill:none;stroke:var(--gold);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.beta-landing .ok circle{stroke-dasharray:170;stroke-dashoffset:170;animation:draw .6s var(--e) forwards}
+.beta-landing .ok path{stroke-dasharray:40;stroke-dashoffset:40;animation:draw .4s var(--e) .45s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.beta-landing .ok b{font-size:19px;font-weight:800}
+.beta-landing .ok p{margin:0;font-size:14px;color:var(--tx-2);line-height:1.7}
+
+.beta-landing .slots{display:flex;flex-direction:column;gap:18px}
+.beta-landing .slots-bar{height:8px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.beta-landing .slots-bar i{display:block;height:100%;width:0;border-radius:99px;
+  background:linear-gradient(90deg,var(--gold-deep),var(--gold));transition:width 1.4s var(--e)}
+.beta-landing .slots-n{font-family:var(--mono);font-size:clamp(30px,4.4vw,52px);font-weight:800;color:var(--gold);line-height:1}
+.beta-landing .slots-n s{text-decoration:none;font-size:.42em;color:var(--tx-3);margin-left:6px}
+
+
+/* ============================================================
+   [8] 하단 고정 CTA 바 — 히어로를 벗어나면 나타납니다
+   ============================================================ */
+.beta-landing .dock{position:fixed;left:0;right:0;bottom:0;z-index:70;
+  display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+  padding:16px var(--pad) calc(16px + env(safe-area-inset-bottom));
+  background:rgba(8,8,7,.82);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);
+  border-top:1px solid var(--line);
+  transform:translateY(110%);transition:transform .5s var(--e)}
+.beta-landing .dock.show{transform:none}
+.beta-landing .dock-t{font-size:13.5px;font-weight:600;color:var(--tx-2)}
+.beta-landing .dock-t b{color:var(--gold-soft);font-family:var(--mono)}
+
+
+/* FOOTER */
+.beta-landing footer{position:relative;z-index:1;border-top:1px solid rgba(255,255,255,.08)}
+.beta-landing .foot{padding:clamp(56px,7vw,88px) var(--pad) clamp(110px,12vw,150px);max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+.beta-landing .foot-links{display:flex;flex-wrap:wrap;align-items:center;gap:20px;font-size:13px;font-weight:600}
+.beta-landing .foot-links a{color:rgba(255,255,255,.8);text-decoration:none}
+.beta-landing .foot-links a:hover{color:var(--gold-soft)}
+.beta-landing .foot-links .mail{margin-left:auto;color:var(--tx-3);font-weight:500}
+.beta-landing .biz{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:12px;font-weight:500;line-height:1.7;color:var(--tx-3)}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:1120px){ .beta-landing .apply{grid-template-columns:1fr} }
+@media (max-width:980px){
+  .beta-landing{--sec:clamp(84px,12vw,120px)}
+  .beta-landing .feat{grid-template-columns:1fr;gap:36px}
+  .beta-landing .apply{grid-template-columns:1fr}
+  .beta-landing .app-body{grid-template-columns:1fr}
+  .beta-landing .app-side{display:none}
+  .beta-landing .tabs{grid-template-columns:repeat(2,1fr);gap:22px 20px;border-bottom:0}
+  .beta-landing .tab{padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .beta-landing .pin{top:84px}
+}
+@media (max-width:640px){
+  .beta-landing{--sec:clamp(72px,16vw,96px)}
+  .beta-landing .gostop{grid-template-columns:1fr}
+  .beta-landing .done-t{width:100%;margin-bottom:2px}
+  .beta-landing .fields{grid-template-columns:1fr}
+  .beta-landing .nav-slots{display:none}
+  .beta-landing .bars{gap:16px}
+  .beta-landing .dock-t{display:none}
+  .beta-landing .dock .btn{width:100%}
+}

@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      # 스키마가 실제로 적용되는지까지 봐야 의미가 있다 — Flyway 마이그레이션은
+      # PostgreSQL 에서 옮겨온 것이라 "문법이 통과한다"는 보장이 없다.
+      # 8.4 를 쓰는 이유: 생성 컬럼 기본값(8.0.13+)과 ON DUPLICATE KEY 행 별칭(8.0.19+)이
+      # 필요하고, 개발 장비의 9.x 로만 검증하면 8.x 전용 차이를 놓친다.
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: g2b
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: temurin
+          cache: maven
+
+      - name: 단위 테스트
+        run: ./mvnw -B test
+
+      - name: 마이그레이션 적용 검증
+        run: |
+          set -euo pipefail
+          mysql -h 127.0.0.1 -P 3306 -uroot -proot \
+            -e "ALTER DATABASE g2b CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+          for f in src/main/resources/db/migration/V*.sql; do
+            echo "적용: $f"
+            mysql -h 127.0.0.1 -P 3306 -uroot -proot --default-character-set=utf8mb4 g2b < "$f"
+          done
+          count=$(mysql -h 127.0.0.1 -P 3306 -uroot -proot -N \
+            -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='g2b'")
+          echo "생성된 테이블: $count"
+          # 테이블이 통째로 빠지면 조용히 줄어들 뿐 오류가 안 난다 — 하한을 박아 둔다.
+          test "$count" -ge 114
+
+      - name: 패키징
+        run: ./mvnw -B -DskipTests package

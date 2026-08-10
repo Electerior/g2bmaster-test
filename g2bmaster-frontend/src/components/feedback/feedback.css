@@ -1,0 +1,144 @@
+/*
+ * 빈 상태 · 대기 표시 — 원본 .empty-msg / .pending-* / .report-spinner 를 옮긴 것.
+ */
+
+.empty-state {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* 서비스 신청 · 승인 대기 온보딩 (원본 renderPending, app.js:4077) */
+.pending-icon {
+  font-size: 40px;
+  line-height: 1;
+  display: block;
+  margin-bottom: 4px;
+}
+.pending-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 4px;
+}
+.pending-msg {
+  font-size: var(--fs-base);
+  color: var(--muted);
+  line-height: 1.7;
+}
+.pending-link {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 9px 22px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--radius);
+  font-size: var(--fs-table);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.pending-link:hover {
+  background: var(--primary-dark);
+  text-decoration: none;
+  color: #fff;
+}
+
+/* 회전 스피너 — 원본 .report-spinner */
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 14px;
+  border: 4px solid var(--blue-soft);
+  border-top-color: var(--blue-strong);
+  border-radius: 50%;
+  animation: spinner-spin 0.8s linear infinite;
+}
+.spinner.small {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+  margin: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+@keyframes spinner-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 3s;
+  }
+}
+
+/* ── "아직 준비 중" 토스트 ─────────────────────────────────────────────── */
+.not-ready-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--warn);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-table);
+  line-height: 1.5;
+  box-shadow: 0 6px 24px rgb(30 36 51 / 18%);
+}
+.not-ready-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.not-ready-toast strong {
+  color: var(--primary);
+}
+.not-ready-toast button {
+  margin-left: 2px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.not-ready-toast button:hover {
+  color: var(--text);
+}
+/* 준비 중 기능의 조작부 — 남겨 두되 눌러도 조건이 바뀌지 않음을 색으로 알린다. */
+.not-ready-control {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .not-ready-toast {
+    animation: not-ready-in 0.18s ease-out;
+  }
+  @keyframes not-ready-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 8px);
+    }
+  }
+}
+
+/* 패널 안의 짧은 대기·빈 안내 — 원본 .trend-loading / .trend-empty */
+.panel-loading,
+.panel-empty {
+  padding: 30px 12px;
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--fs-table);
+}

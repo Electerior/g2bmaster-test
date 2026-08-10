@@ -1,0 +1,571 @@
+/*
+ * 서랍 · 모달 — 원본 style.css 의 .drawer-overlay / .bid-drawer / .settings-modal 블록.
+ * z-index 는 tokens.css 가 갖는다(원본은 규칙마다 숫자를 박아 두어 서로 비교가 안 됐다).
+ */
+
+.overlay-scrim {
+  position: fixed;
+  inset: 0;
+  /* 배경을 흐리지 않는다 — 왼쪽 목록을 계속 선명히 보면서 상세를 참조할 수 있게.
+     클릭으로 닫히는 영역만 잡고, 아주 옅은 dim 으로 패널에 초점만 준다. */
+  background: var(--panel-scrim);
+  z-index: var(--z-drawer-overlay);
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  animation: scrim-fade 0.28s ease-out both;
+}
+@keyframes scrim-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* 닫힐 때 — 배경 dim 이 부드럽게 걷힌다. */
+.overlay-scrim.closing {
+  animation: scrim-fade-out 0.24s ease-in both;
+}
+@keyframes scrim-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.overlay-scrim.modal-level {
+  z-index: var(--z-modal-overlay);
+}
+
+.drawer {
+  position: fixed;
+  /*
+   * Floating 글래스모피즘 패널 — 화면 가장자리에서 살짝 띄운다(inset). 위/아래/오른쪽에
+   * 여백을 두고 네 모서리를 둥글려, 창에 붙은 서랍이 아니라 화면 위에 떠 있는 카드가 된다.
+   */
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  width: var(--drawer-width);
+  max-height: calc(100vh - 32px);
+  border-radius: 20px;
+  /*
+   * 글래스모피즘 — 다만 배경은 흐리지 않는다(뒤 목록을 선명히 유지). 블러 대신 살짝 투명한
+   * 흰 유리 틴트 + 밝은 테두리 + 안쪽 상단 하이라이트로 '유리질'을 내고, 바깥 다층 그림자로
+   * 떠 있는 느낌을 준다. 텍스트가 많으므로 배경 없이도 읽히게 충분히 불투명하게.
+   */
+  background: var(--panel-glass-bg);
+  border: 1px solid var(--panel-glass-edge);
+  box-shadow: var(--panel-glass-shadow);
+  z-index: var(--z-drawer);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* 오른쪽 밖에서 부드럽게 떠오르며 들어온다 — 살짝 감속하는 easing 으로 '스르륵' 멈춘다. */
+  animation: drawer-slide-in 0.44s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* GPU 합성으로 슬라이드가 매끄럽게(레이아웃 재계산 없이 transform 만 움직임). */
+  will-change: transform, opacity;
+}
+@keyframes drawer-slide-in {
+  from {
+    transform: translateX(24px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+/* 닫힐 때 — 오른쪽으로 살짝 미끄러지며 옅어진다(들어온 궤적의 역방향). EXIT_MS(260ms)와 맞춤. */
+.drawer.closing {
+  animation: drawer-slide-out 0.26s cubic-bezier(0.4, 0, 1, 1) both;
+}
+@keyframes drawer-slide-out {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(32px) scale(0.98);
+    opacity: 0;
+  }
+}
+@media (max-width: 560px) {
+  /* 좁은 화면에서는 여백을 줄이고 폭을 꽉 채운다 — 카드가 너무 작아지지 않게. */
+  .drawer {
+    top: 8px;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    max-height: calc(100vh - 16px);
+    border-radius: 16px;
+  }
+}
+/* 모션을 줄여 달라고 한 사용자에게는 밀려 들어오는 대신 그 자리에서 옅게 나타나고 사라진다. */
+@media (prefers-reduced-motion: reduce) {
+  .drawer {
+    animation: drawer-fade 0.2s ease-out both;
+  }
+  .drawer.closing {
+    animation: drawer-fade-out 0.2s ease-in both;
+  }
+  .overlay-scrim {
+    animation: none;
+  }
+}
+@keyframes drawer-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes drawer-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--panel-glass-divider);
+  flex-shrink: 0;
+}
+.drawer-badge {
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+.drawer-close {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--muted);
+  line-height: 1;
+  padding: 0;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+.drawer-close:hover {
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--text);
+  transform: rotate(90deg);
+}
+.drawer-title {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 12px 20px 8px;
+  color: var(--text);
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--panel-glass-divider);
+}
+/* 저장 · 나라장터 이동 액션 줄 — SVG 목업의 상단 버튼 묶음. */
+.drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--panel-glass-divider);
+  flex-shrink: 0;
+}
+.drawer-save-btn {
+  padding: 7px 16px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: var(--fs-table);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px -4px rgba(26, 79, 160, 0.55);
+  transition:
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+.drawer-save-btn:hover:not(:disabled) {
+  background: var(--primary-dark);
+  box-shadow: 0 6px 18px -4px rgba(26, 79, 160, 0.6);
+  transform: translateY(-1px);
+}
+.drawer-save-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.drawer-save-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+  box-shadow: none;
+}
+.drawer-ext-link {
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--muted);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius);
+  font-size: var(--fs-table);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    color 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
+}
+.drawer-ext-link:hover {
+  color: var(--primary);
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+}
+
+/* 패널 본문 — 하나의 스크롤 흐름. 메타·본문·첨부가 각자 스크롤되지 않고 여기서 함께 흐른다. */
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.drawer-meta {
+  padding: 14px 20px;
+  display: grid;
+  /* 카드형 자동 배열 — 넓은 패널에선 2~3열로 채워져 빈 공간이 사라지고 세로가 짧아진다.
+     좁아지면 자연스럽게 열 수가 줄어든다(반응형). */
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--panel-glass-divider);
+}
+/* 메타 항목 = 옅은 유리 카드. 라벨 위, 값 아래. */
+.meta-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: rgba(120, 140, 175, 0.06);
+  border: 1px solid var(--panel-glass-divider);
+  min-width: 0;
+}
+.meta-key {
+  color: var(--muted);
+  font-size: var(--fs-badge-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.meta-val {
+  font-size: var(--fs-table);
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+  line-height: 1.45;
+}
+.meta-val a {
+  color: var(--primary);
+  font-weight: 600;
+}
+/* 값이 긴 항목(품명·기관명 등)은 두 칸을 차지해 줄바꿈 없이 읽히게 한다. */
+.meta-field.wide {
+  grid-column: span 2;
+}
+/* 접이식 블록·물품목록은 전체 폭을 쓴다 — 카드 격자 밖으로 나가야 폭이 산다. */
+.drawer-meta > .collapsible,
+.drawer-meta > .meta-productlist {
+  grid-column: 1 / -1;
+}
+/* 물품목록 — 토글 없이 항상 펼친 옅은 유리 카드. */
+.meta-productlist {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(120, 140, 175, 0.06);
+  border: 1px solid var(--panel-glass-divider);
+}
+.meta-productlist-label {
+  font-size: var(--fs-badge-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.meta-productlist .raw-grid {
+  margin-top: 0;
+}
+.drawer-section {
+  padding: 14px 20px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.drawer-section.tight {
+  border-top: 1px solid var(--panel-glass-divider);
+}
+.drawer-section-label {
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.drawer-summary {
+  font-size: var(--fs-table);
+  line-height: 1.8;
+}
+.summary-text strong {
+  color: var(--primary);
+}
+.summary-error {
+  color: var(--danger);
+  font-size: var(--fs-meta);
+  margin-bottom: 8px;
+}
+.source-label {
+  font-size: var(--fs-badge);
+  color: var(--muted);
+  margin-bottom: 8px;
+  padding: 3px 10px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid var(--panel-glass-edge);
+  border-radius: 10px;
+  display: inline-block;
+}
+.drawer-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--panel-glass-divider);
+  flex-shrink: 0;
+}
+.btn-g2b-link {
+  display: inline-block;
+  padding: 8px 18px;
+  background: var(--table-head-bg);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: var(--fs-table);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.btn-g2b-link:hover {
+  background: var(--blue-soft);
+  text-decoration: none;
+}
+.btn-ai {
+  padding: 8px 20px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: var(--fs-table);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-ai:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+.btn-ai:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.btn-opening-fetch {
+  font-size: var(--fs-badge);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+/* 개찰 결과 표 — 원본 fetchOpeningResults 가 인라인 스타일로 그리던 것 */
+.opening-table-wrap {
+  overflow-x: auto;
+}
+.opening-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-meta);
+}
+.opening-table thead tr {
+  background: var(--surface-2);
+  font-size: var(--fs-badge);
+  color: var(--muted);
+}
+.opening-table th,
+.opening-table td {
+  padding: 4px 8px;
+}
+.opening-table .num {
+  text-align: right;
+}
+.opening-table .mid {
+  text-align: center;
+}
+.opening-table tr.win {
+  font-weight: 600;
+  background: var(--accent-light);
+}
+.opening-note {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: var(--fs-badge);
+}
+
+/* ── 모달 ──────────────────────────────────────────────────────────────── */
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(480px, 92vw);
+  background: var(--surface);
+  border-radius: var(--radius);
+  z-index: var(--z-modal);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+}
+.modal-wide {
+  width: min(900px, 95vw);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.modal-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+.modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  text-align: right;
+}
+
+/* ── 접이식 토글 바 — 유리 패널 위에 얹히므로 같은 글래스모피즘으로 맞춘다. ──── */
+.collapsible {
+  margin-top: 10px;
+  border: 1px solid var(--panel-glass-divider);
+  border-radius: 12px;
+  /* 패널 위에 얹히는 옅은 카드 — 배경을 흐리지 않으므로 은은한 틴트로 층만 구분한다. */
+  background: rgba(120, 140, 175, 0.06);
+  padding: 10px 12px;
+  transition: background 0.2s ease;
+}
+.collapsible:hover {
+  background: rgba(120, 140, 175, 0.1);
+}
+.collapsible[open] {
+  background: rgba(120, 140, 175, 0.05);
+}
+.collapsible > summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--primary);
+  font-size: var(--fs-meta);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.collapsible > summary::-webkit-details-marker {
+  display: none;
+}
+/* 열림/닫힘을 나타내는 회전 셰브론 — 화살표가 부드럽게 돈다. */
+.collapsible > summary::before {
+  content: '›';
+  font-size: 15px;
+  line-height: 1;
+  color: var(--muted);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.collapsible[open] > summary::before {
+  transform: rotate(90deg);
+  color: var(--primary);
+}
+.collapsible.quiet > summary {
+  color: var(--muted);
+  font-weight: 400;
+}
+.raw-grid {
+  display: grid;
+  grid-template-columns: 124px 1fr;
+  gap: 6px 10px;
+  margin-top: 10px;
+}
+.raw-key {
+  color: var(--muted);
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  word-break: break-all;
+}
+.raw-val {
+  font-size: var(--fs-meta);
+  word-break: break-all;
+}
+.spec-row {
+  margin-top: 8px;
+}
+.spec-row span {
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+/* 물품 상세 칩 — 원본 .product-detail-list */
+.product-detail-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+}
+.product-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--blue-soft);
+  color: var(--primary);
+  font-size: var(--fs-meta);
+  line-height: 1.3;
+}
+.product-detail-chip strong {
+  font-variant-numeric: tabular-nums;
+}

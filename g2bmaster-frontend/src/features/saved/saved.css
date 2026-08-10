@@ -1,0 +1,79 @@
+/*
+ * 저장 공고 카드 — 원본 .deal-card / .saved-card / .prod-gap 블록.
+ */
+.saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.saved-count {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  margin-bottom: 10px;
+}
+.saved-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  background: var(--surface);
+}
+.saved-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.saved-card-title {
+  flex: 1 1 auto;
+  font-size: var(--fs-deal-title);
+  font-weight: 700;
+  line-height: 1.32;
+}
+.saved-del-btn {
+  flex: 0 0 auto;
+  font-size: var(--fs-meta);
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: inherit;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.saved-del-btn:hover {
+  border-color: var(--blue-strong);
+  color: var(--blue-strong);
+}
+.saved-del-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.saved-gap {
+  margin-top: 4px;
+}
+/* 합계 ↔ 실추정가 차액. 초과는 눈에 띄어야 한다 — 그 구성으로는 남지 않는다는 뜻이다. */
+.prod-gap {
+  font-size: var(--fs-badge);
+  font-weight: 600;
+}
+.prod-gap.under {
+  color: var(--gap-under-fg);
+}
+.prod-gap.over {
+  color: var(--gap-over-fg);
+}
+.saved-summary {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  margin-top: 6px;
+  max-height: 96px;
+  overflow: hidden;
+}
+.saved-meta {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  margin-top: 6px;
+}
+
+.saved-card-actions { display: flex; align-items: center; gap: 8px; }
+.saved-table-actions { margin-top: 10px; text-align: right; }

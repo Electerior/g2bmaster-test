@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/electerior-logo.svg" />
+
+    <!--
+      본문 폰트. 랜딩(/beta)과 앱 화면이 모두 이것을 쓴다 — tokens.css 의 --font-sans 도
+      Pretendard 를 가리킨다. dynamic-subset 이라 화면에 실제로 쓰인 글자 범위만 내려받으므로
+      한글 웹폰트치고 전송량이 작다.
+    -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+
+    <!--
+      원본 public/index.html 6~67행의 SEO 블록을 그대로 옮긴 것이다.
+
+      이 앱은 검색 유입을 실제로 신경 쓴다(robots·naverbot·canonical·hreflang·
+      OpenGraph·JSON-LD 를 모두 갖추고 있었다). SPA 로 바꾸면서 이 정적 메타를 빠뜨리면
+      SEO 가 후퇴한다 — 라우트별 동적 메타가 필요해지면 프리렌더 단계를 붙일 것.
+    -->
+    <title>G2B Masters - 나라장터·국방전자조달 입찰정보 통합 검색</title>
+    <meta name="description" content="G2B Masters는 나라장터·국방전자조달 입찰공고, 발주계획, 사전규격, 입찰결과를 통합 검색하고 품목·자격·수주기회 분석을 지원하는 일렉테리어 그룹의 공공조달 정보 서비스입니다." />
+    <meta name="keywords" content="G2B Masters, 나라장터, 입찰공고, 공공조달, 국방전자조달, D2B, 사전규격, 발주계획, 입찰결과, 일렉테리어" />
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+    <meta name="googlebot" content="index,follow" />
+    <meta name="naverbot" content="index,follow" />
+    <meta name="author" content="Electerior Group" />
+    <meta name="theme-color" content="#1f56a7" />
+    <link rel="canonical" href="https://g2bmasters-open.vercel.app/" />
+    <link rel="alternate" hreflang="ko-KR" href="https://g2bmasters-open.vercel.app/" />
+
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="G2B Masters" />
+    <meta property="og:title" content="G2B Masters - 나라장터·국방전자조달 입찰정보 통합 검색" />
+    <meta property="og:description" content="나라장터·국방전자조달 공고를 한 번에 찾고 일렉테리어 관점의 품목·자격·수주기회를 분석합니다." />
+    <meta property="og:url" content="https://g2bmasters-open.vercel.app/" />
+    <!--
+      og:image 는 반드시 래스터(PNG/JPEG)여야 한다. 페이스북·X·카카오톡 크롤러는
+      SVG 를 렌더링하지 않으므로 SVG 를 지정하면 미리보기 이미지가 아예 뜨지 않는다.
+      아래 JSON-LD 의 Organization "logo" 는 schema.org 소비자가 SVG 를 처리하므로
+      그대로 SVG 를 가리킨다.
+    -->
+    <meta property="og:image" content="https://g2bmasters-open.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="G2B Masters - 나라장터·국방전자조달 입찰정보 통합 검색" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="G2B Masters - 나라장터·국방전자조달 입찰정보 통합 검색" />
+    <meta name="twitter:description" content="나라장터·국방전자조달 공고를 통합 검색하고 수주기회를 빠르게 검토합니다." />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://www.electerior.com/#organization",
+            "name": "Electerior Group",
+            "url": "https://www.electerior.com/",
+            "logo": "https://g2bmasters-open.vercel.app/electerior-logo.svg",
+            "email": "hello@electerior.com",
+            "telephone": "+82-10-5598-0054"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://g2bmasters-open.vercel.app/#website",
+            "name": "G2B Masters",
+            "url": "https://g2bmasters-open.vercel.app/",
+            "inLanguage": "ko-KR",
+            "publisher": { "@id": "https://www.electerior.com/#organization" },
+            "description": "나라장터·국방전자조달 입찰정보 통합 검색 서비스"
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://g2bmasters-open.vercel.app/#app",
+            "name": "G2B Masters",
+            "url": "https://g2bmasters-open.vercel.app/",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "inLanguage": "ko-KR",
+            "creator": { "@id": "https://www.electerior.com/#organization" },
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "KRW"
+            },
+            "keywords": "나라장터, G2B, 국방전자조달, 입찰공고, 사전규격, 발주계획, 입찰결과, 공공조달",
+            "description": "나라장터와 국방전자조달의 입찰공고, 발주계획, 사전규격, 입찰결과를 통합 검색하고 수주기회 분석을 지원합니다."
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

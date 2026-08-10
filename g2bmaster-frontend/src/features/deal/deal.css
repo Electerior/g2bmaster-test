@@ -1,0 +1,388 @@
+/* AI 수주 데스크. 토큰은 styles/tokens.css 를 따른다. */
+
+.deal-form {
+  margin: 16px 0 24px;
+  padding: 16px;
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+}
+
+.deal-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.deal-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-muted, #57606a);
+}
+
+.deal-form input {
+  padding: 7px 10px;
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.deal-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.deal-deep {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted, #57606a);
+}
+
+.btn-primary {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent, #1a73e8);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.deal-result {
+  display: grid;
+  gap: 16px;
+}
+
+.deal-card {
+  padding: 16px;
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+}
+
+.deal-card h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.deal-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.deal-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.deal-stat dt {
+  font-size: 12px;
+  color: var(--text-muted, #57606a);
+}
+
+.deal-stat dd {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.deal-stat.highlight dd {
+  color: var(--accent, #1a73e8);
+}
+
+.deal-spec-text {
+  max-height: 360px;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 6px;
+  background: var(--surface-muted, #f6f8fa);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.deal-note {
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--surface-muted, #f6f8fa);
+}
+
+.deal-toggles {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border, #d0d7de);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deal-includes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+}
+
+.deal-includes-label {
+  color: var(--text-muted, #57606a);
+}
+
+.deal-includes label.disabled {
+  opacity: 0.45;
+}
+
+.deal-refresh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted, #57606a);
+}
+
+.deal-cache {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--surface-muted, #f6f8fa);
+  border: 1px dashed var(--border, #d0d7de);
+}
+
+.deal-breakdown {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.deal-breakdown th,
+.deal-breakdown td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border, #d0d7de);
+  text-align: left;
+}
+
+.deal-breakdown th {
+  color: var(--text-muted, #57606a);
+  font-weight: 600;
+}
+
+.deal-breakdown tr.inferred td {
+  color: var(--text-muted, #8a8a8a);
+  font-style: italic;
+}
+
+/* ── 검색 기반 수주 데스크 ─────────────────────────────────────────────── */
+.deal-search {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 12px 0 16px;
+}
+
+.deal-search-input {
+  flex: 1 1 320px;
+  padding: 8px 12px;
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.deal-count,
+.deal-hint {
+  margin: 4px 0 12px;
+}
+
+/* ── 구분 필터(칩) ─────────────────────────────────────────────────────── */
+.deal-division {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 16px;
+}
+
+.deal-division-label {
+  font-size: 13px;
+  color: var(--muted, #6b7a99);
+  margin-right: 2px;
+}
+
+.deal-division-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 14px;
+  background: var(--surface, #fff);
+  color: var(--text, #1e2433);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.deal-division-btn.active {
+  background: var(--primary, #1a4fa0);
+  border-color: var(--primary, #1a4fa0);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ── 카드 제목 링크 · 첨부 ─────────────────────────────────────────────── */
+.deal-card-title a {
+  color: var(--primary, #1a4fa0);
+  text-decoration: none;
+}
+.deal-card-title a:hover {
+  text-decoration: underline;
+}
+
+.deal-attachments {
+  margin-top: 10px;
+}
+.deal-attachments-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted, #6b7a99);
+}
+.deal-attachments .attachment-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.deal-attachments .attachment-list li {
+  margin: 2px 0;
+}
+
+/* 한 행에 공고 하나 — 카드를 가로로 꽉 채워 한눈에 스캔한다(그리드 대신 세로 스택). */
+.deal-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 페이지 이동(다음 20개) */
+.deal-pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+  margin: 16px 0 4px;
+}
+.deal-pager button {
+  min-width: 34px;
+  padding: 5px 10px;
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 6px;
+  background: var(--surface, #fff);
+  color: var(--text, #1e2433);
+  font-size: 13px;
+  cursor: pointer;
+}
+.deal-pager button.active {
+  background: var(--primary, #1a4fa0);
+  border-color: var(--primary, #1a4fa0);
+  color: #fff;
+  font-weight: 600;
+}
+.deal-pager button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.deal-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.deal-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.deal-card-title {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.deal-dday {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent, #1a73e8);
+  white-space: nowrap;
+}
+
+.deal-save {
+  padding: 3px 10px;
+  border: 1px solid var(--border, #d0d7de);
+  border-radius: 5px;
+  background: var(--surface, #fff);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.deal-save:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.deal-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 6px 0 10px;
+  font-size: 12px;
+  color: var(--text-muted, #57606a);
+}
+
+.deal-chip {
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--surface-muted, #f6f8fa);
+  border: 1px solid var(--border, #d0d7de);
+}
+
+.deal-parts {
+  margin: 8px 0 0;
+}
+
+/* ── 편집 가능한 가격표 ─────────────────────────────────────────────────── */
+.price-table-wrap { margin-top: 12px; overflow-x: auto; }
+.price-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.price-table th, .price-table td { padding: 5px 8px; border-bottom: 1px solid var(--border, #d0d7de); text-align: left; }
+.price-table th.num, .price-table td.num { text-align: right; }
+.price-table td.strong, .price-table .num.strong { font-weight: 600; }
+.price-table tfoot td { border-top: 2px solid var(--border, #d0d7de); border-bottom: none; }
+.price-table input { width: 100%; box-sizing: border-box; padding: 4px 6px; border: 1px solid var(--border, #d0d7de); border-radius: 4px; font-size: 13px; }
+.price-table input.wide { min-width: 160px; }
+.price-table td.num input { text-align: right; }
+.price-table tr.inferred td { background: var(--surface-muted, #f6f8fa); }
+/* 베어본(완본체 베이스) 행 — 부품과 시각적으로 구분한다. */
+.price-table tr.base td { background: var(--accent-soft, #eef4ff); font-weight: 500; }
+.price-table tr.base td:first-child { border-left: 3px solid var(--accent, #3b6fd4); }
+.price-inferred { margin-left: 6px; font-size: 11px; color: var(--text-muted, #8a8a8a); border: 1px solid var(--border, #d0d7de); border-radius: 8px; padding: 0 5px; }
+.price-row-del { border: none; background: transparent; color: var(--text-muted, #8a8a8a); font-size: 16px; cursor: pointer; line-height: 1; }
+.price-empty { text-align: center; color: var(--text-muted, #8a8a8a); padding: 12px; }
+.price-add { margin-top: 8px; padding: 5px 12px; border: 1px dashed var(--border, #d0d7de); border-radius: 6px; background: var(--surface, #fff); font-size: 13px; cursor: pointer; }

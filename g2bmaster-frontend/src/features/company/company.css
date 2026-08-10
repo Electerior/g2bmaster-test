@@ -1,0 +1,190 @@
+/*
+ * 낙찰자 조회(업체 프로파일) — 원본 style.css 의 .corp-* 블록.
+ */
+.corp-panel {
+  padding: 12px 0 20px;
+}
+.corp-profile {
+  background: var(--surface);
+  border: 1px solid var(--corp-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.corp-profile-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--corp-border);
+  background: linear-gradient(135deg, var(--corp-head-from) 0%, var(--corp-head-to) 100%);
+}
+.corp-profile-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--corp-name-fg);
+  margin-bottom: 12px;
+}
+.corp-profile-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.corp-stat {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--corp-stat-border);
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  min-width: 90px;
+  text-align: center;
+}
+.corp-stat-label {
+  font-size: var(--fs-badge);
+  color: var(--corp-stat-label);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+.corp-stat-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--corp-stat-val);
+  font-variant-numeric: tabular-nums;
+}
+.corp-profile-note {
+  font-size: var(--fs-badge);
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ── 투찰률 성향 그래프 ────────────────────────────────────────────────── */
+.corp-chart-wrap {
+  padding: 16px 24px 4px;
+  border-bottom: 1px solid var(--corp-border);
+}
+.corp-chart-title {
+  font-size: var(--fs-meta);
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.corp-trend-svg {
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+  display: block;
+}
+.corp-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: var(--fs-badge);
+  color: var(--muted);
+  margin: 6px 0 8px;
+}
+.corp-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--corp-dot-lost);
+  margin-right: 3px;
+}
+.corp-legend-dot.won {
+  background: var(--corp-dot-won);
+}
+
+/* ── 탭 ────────────────────────────────────────────────────────────────── */
+.corp-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--corp-border);
+  padding: 0 24px;
+}
+.corp-tab {
+  padding: 10px 18px;
+  font-size: var(--fs-table);
+  font-weight: 600;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.corp-tab:hover {
+  color: var(--primary);
+}
+.corp-tab.active {
+  color: var(--corp-stat-label);
+  border-bottom-color: var(--corp-stat-label);
+}
+.corp-tab-panel {
+  overflow-x: auto;
+}
+
+/* ── 이력 표 ───────────────────────────────────────────────────────────── */
+.corp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-table);
+}
+.corp-table th {
+  background: var(--corp-th-bg);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: var(--fs-badge);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--corp-border);
+  white-space: nowrap;
+}
+.corp-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--corp-td-border);
+  vertical-align: top;
+  color: var(--text);
+}
+.corp-table tr:last-child td {
+  border-bottom: none;
+}
+.corp-table tr:hover td {
+  background: var(--corp-row-hover);
+}
+.corp-table .row-won td {
+  background: var(--corp-won-bg);
+}
+.corp-table .row-won:hover td {
+  background: var(--corp-won-hover);
+}
+.corp-table .td-nm {
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.corp-table .td-amt {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.corp-table .td-empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 24px;
+}
+.won-badge {
+  display: inline-block;
+  background: var(--won-badge-bg);
+  color: var(--won-badge-fg);
+  border: 1px solid var(--won-badge-border);
+  border-radius: 4px;
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  padding: 1px 6px;
+}
