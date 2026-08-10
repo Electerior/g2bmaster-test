@@ -1,0 +1,285 @@
+/* 단가 DB. 토큰은 styles/tokens.css 를 따른다. */
+
+/* 공유 1차 버튼 — deal.css 와 같은 모양(라우트마다 css 가 갈려 각자 정의한다). */
+.btn-primary {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent, #1a73e8);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ── 조회 필터 ─────────────────────────────────────────────────────────── */
+.price-filter {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin: 12px 0 16px;
+}
+
+.price-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.price-field select,
+.price-field input {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* ── AI 시세 적재 ──────────────────────────────────────────────────────── */
+.price-ingest {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.price-ingest-head {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.price-ingest-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.price-ingest-row input {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.price-ingest-query {
+  flex: 1 1 260px;
+}
+
+.price-ingest-sources {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.price-ingest-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.price-ingest-result {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.price-persource {
+  display: inline-flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-left: 8px;
+}
+
+.price-persource-item {
+  color: var(--muted);
+}
+
+.price-ingest-errors {
+  margin-top: 6px;
+  color: var(--danger);
+  font-size: 12px;
+}
+
+/* ── 표 ────────────────────────────────────────────────────────────────── */
+.price-db-wrap {
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+.price-db-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.price-db-table th,
+.price-db-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--table-row-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.price-db-table th {
+  background: var(--table-head-bg);
+  color: var(--muted);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.price-db-table th.num,
+.price-db-table td.num {
+  text-align: right;
+}
+
+.price-db-table td.strong {
+  font-weight: 600;
+}
+
+.price-db-table input,
+.price-db-table select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 13px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.price-db-table input.wide {
+  min-width: 140px;
+}
+
+.price-db-table td.num input {
+  text-align: right;
+}
+
+.price-source {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 8px;
+  background: var(--blue-soft);
+  color: var(--primary);
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.price-name {
+  font-weight: 600;
+  max-width: 220px;
+}
+
+.price-spec {
+  max-width: 240px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* null 단가는 '미확인' — 회색으로 눈에 덜 띄게(0 과 혼동하지 않도록). */
+.price-unknown {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.price-actions {
+  white-space: nowrap;
+  display: flex;
+  gap: 4px;
+}
+
+.price-btn {
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.price-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.price-btn.active {
+  background: var(--accent-light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.price-db-add {
+  margin-top: 8px;
+  padding: 5px 12px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.price-db-empty {
+  text-align: center;
+  color: var(--table-empty-fg);
+  padding: 16px;
+}
+
+.price-add-row td {
+  background: var(--accent-light);
+}
+
+.price-form-error {
+  margin: 0 0 8px;
+  color: var(--danger);
+  font-size: 13px;
+}
+
+/* ── 행별 시세 이력 ────────────────────────────────────────────────────── */
+.price-history-row td {
+  background: var(--surface-2);
+  padding: 10px 16px;
+}
+
+.price-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.price-history-table th,
+.price-history-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--table-row-line);
+  text-align: left;
+}
+
+.price-history-table th.num,
+.price-history-table td.num {
+  text-align: right;
+}

@@ -1,0 +1,143 @@
+/*
+ * 디자인 토큰 — 원본 public/style.css 의 :root 블록을 그대로 옮기고,
+ * 원본이 "선언 없이 인라인 fallback 으로만" 쓰던 변수와 파일 곳곳에 하드코딩돼 있던
+ * 색을 정식 토큰으로 승격했다.
+ *
+ * 승격한 이유: 원본은 `var(--surface-2,#f5f7fa)` 처럼 fallback 에 실제 값이 숨어 있어서
+ * 색을 바꾸려면 문자열 검색으로 모든 사용처를 찾아야 했다. 한 곳에서 정의하면
+ * 그 문제가 사라진다. 값 자체는 전부 원본과 동일하다 — 이식 단계에서 색은 바꾸지 않는다.
+ */
+:root {
+  /* ── 원본 :root 그대로 ─────────────────────────────────────────────────── */
+  --primary: #1a4fa0;
+  --primary-dark: #123a78;
+  --accent: #e8711a;
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --border: #dde3ed;
+  --text: #1e2433;
+  --muted: #6b7a99;
+  --radius: 8px;
+
+  /* ── 원본이 인라인 fallback 으로만 쓰던 변수 (app.js:4709/4720/4732) ───────── */
+  --surface-2: #f5f7fa;
+  --accent-light: #e8f0fe;
+  --error: #c0392b;
+
+  /* 낙찰자 조회 차트. 원본은 .corp-panel 안쪽에서만 선언해 다크모드 밖에서는 비어 있었다. */
+  --corp-grid: #dde3ed;
+  --corp-axis: #8896b3;
+  --corp-dot-stroke: #ffffff;
+
+  /* ── 흩어져 있던 하드코딩 색 (spec §3) ───────────────────────────────────── */
+  --danger: #c0392b;
+  --warn: #e8711a;
+  --success: #047857;
+  --purple: #6d28d9;
+  --purple-strong: #7c3aed;
+  --ink: #172033;
+  --ink-hover: #25324a;
+  --kakao: #fee500;
+  --kakao-hover: #f2d900;
+  --kakao-text: #191919;
+  --teal: #0f766e;
+  --teal-dark: #115e59;
+  --tooltip: #1e293b;
+  --blue-soft: #e8f0fe;
+  --blue-line: #4285f4;
+  --blue-strong: #1d4ed8;
+  --dark-surface: #1e2533;
+  --dark-surface-2: #2d3748;
+
+  /* 구분 배지 팔레트 (app.js:4013 formatCell 'type-badge') */
+  --type-goods-fg: #1a4fa0;
+  --type-goods-bg: #e8f0fe;
+  --type-service-fg: #6d28d9;
+  --type-service-bg: #ede9fe;
+  --type-works-fg: #047857;
+  --type-works-bg: #d1fae5;
+  --type-etc-fg: #6b7a99;
+  --type-etc-bg: #f0f3f8;
+  /* 외자(수입 조달) — 물품(파랑)·용역(보라)·공사(초록)과 또렷이 갈리는 앰버. */
+  --type-foreign-fg: #b45309;
+  --type-foreign-bg: #fef3c7;
+
+  /* 표 ─ 원본이 #f0f3f8 / #f7f9fd 로 박아 두었던 값 */
+  --table-head-bg: #f0f3f8;
+  --table-head-hover: #e4ebf7;
+  --table-row-hover: #eef4fe;
+  --table-row-alt: #fafbfd; /* 얼룩무늬 홀짝 행 */
+  --table-row-line: #edf1f7; /* 행 구분선 — border 보다 옅게 */
+  --table-empty-fg: #bbbbbb;
+
+  /* 배너 · 푸터 */
+  --banner-navy: #143765;
+  --banner-mint: #8ee0c8;
+  --pill-outline: #cfd6e3;
+  --pill-outline-hover: #aeb8c9;
+
+  /* ── 타이포 스케일 (spec §3) ─────────────────────────────────────────────── */
+  /*
+   * Pretendard 로 통일한다. 원본은 'Segoe UI' 였는데 그건 윈도우 기본 서체라 한글이
+   * 맑은 고딕으로 떨어지고, macOS·안드로이드에서는 아예 다른 글꼴이 잡혀 화면이 기기마다
+   * 달라졌다. 웹폰트를 쓰면 어디서든 같은 글자가 나오고, /beta 랜딩과도 서체가 맞는다.
+   * 로드는 index.html 의 link 하나(dynamic-subset)로 끝난다.
+   */
+  --font-sans: 'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo',
+    'Segoe UI', 'Noto Sans KR', sans-serif;
+  --fs-base: 14px;
+  --fs-base-sm: 13px; /* ≤760px */
+  --fs-h1: 20px;
+  --fs-deal-title: 17px;
+  --fs-table: 13px;
+  --fs-badge: 11px;
+  --fs-badge-sm: 10px;
+  --fs-meta: 12px;
+
+  /* ── 레이아웃 ───────────────────────────────────────────────────────────── */
+  --header-height: 56px;
+  --main-max-width: 1480px;
+  --table-min-width: 1580px;
+  /* 상세 패널 폭. 물품목록·본문을 토글 없이 펼쳐 보일 만큼 넓게 잡는다(예전 540px). */
+  --drawer-width: min(720px, 94vw);
+
+  /* ── Soft Glass (g2b-notice-search-glass.svg) ────────────────────────────────
+   * 반투명 유리는 **네비·검색바·드로어에만** 쓴다. 표에는 쓰지 않는다 — 11px 숫자를
+   * 반투명 위에 올리면 대비가 무너지고 스크롤 중 떨림이 생긴다(SVG 설계 주석 ⑪). */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.9);
+  --glass-shadow: 0 6px 20px rgba(22, 52, 95, 0.08);
+  --app-canvas: linear-gradient(160deg, #e9f0fa 0%, #f6f9fd 45%, #e8eef8 100%);
+
+  /* ── 글래스모피즘 패널(드로어) ───────────────────────────────────────────────
+   * 검색바보다 한 겹 더 정교하게 — 본문 텍스트가 많으므로 가독을 위해 더 불투명하되,
+   * 채도(saturate)로 뒤 배경 색을 살짝 끌어와 '유리 너머'의 깊이를 준다. */
+  /* 배경을 흐리지 않으므로 블러에 기대지 않는다 — 텍스트 가독을 위해 충분히 불투명한
+   * 흰 유리 틴트. 여전히 살짝 비쳐 유리질감은 남는다. */
+  --panel-glass-bg: rgba(252, 253, 255, 0.94);
+  /* 가장자리 빛 반사 — 밝은 유리 테두리로 카드 윤곽을 또렷하게. */
+  --panel-glass-edge: rgba(255, 255, 255, 0.85);
+  /* 떠 있는 카드 그림자 — 안쪽 상단 하이라이트 + 바깥 다층 드롭섀도(모든 방향). */
+  --panel-glass-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 24px 60px -18px rgba(18, 42, 84, 0.34),
+    0 8px 24px -12px rgba(18, 42, 84, 0.20),
+    0 2px 8px rgba(18, 42, 84, 0.08);
+  /* 패널 안 구획선 — 불투명 border 대신 유리 위에서 은은하게. */
+  --panel-glass-divider: rgba(120, 140, 175, 0.2);
+  /* 스크림 — 흐리지 않고 아주 옅은 dim 만(뒤 목록을 선명히 유지). */
+  --panel-scrim: rgba(20, 34, 62, 0.14);
+
+  /* ── z-index. 원본은 숫자를 각 규칙에 직접 박아 두어 서로 비교가 안 됐다. ──── */
+  --z-drawer-overlay: 200;
+  --z-drawer: 201;
+  --z-modal-overlay: 1100;
+  --z-modal: 1200;
+  --z-report-overlay: 9999;
+  --z-ai-activity: 10000;
+}
+
+/*
+ * 브레이크포인트: 760(주) · 900 · 820 · 560 · 520.
+ * CSS 변수는 미디어쿼리 조건으로 못 쓰므로 여기서는 문서로만 남긴다.
+ */

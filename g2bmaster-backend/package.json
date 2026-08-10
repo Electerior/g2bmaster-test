@@ -1,0 +1,23 @@
+{
+  "name": "g2bmaster-backend",
+  "version": "1.0.0",
+  "description": "나라장터(G2B) 입찰정보 백엔드 — Spring Boot 4.1 / Java 25 / MySQL 8.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Electerior/g2bmaster-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Electerior/g2bmaster-backend/issues"
+  },
+  "homepage": "https://github.com/Electerior/g2bmaster-backend#readme"
+}

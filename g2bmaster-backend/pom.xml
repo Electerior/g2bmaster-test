@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.1.0</version>
+		<relativePath/>
+	</parent>
+
+	<groupId>com.electerior</groupId>
+	<artifactId>g2bmaster-backend</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>g2bmaster-backend</name>
+	<description>나라장터 G2B 입찰정보 백엔드 (Spring Boot + MySQL)</description>
+
+	<properties>
+		<java.version>25</java.version>
+		<springdoc.version>3.1.0</springdoc.version>
+		<poi.version>5.5.1</poi.version>
+		<jsoup.version>1.23.1</jsoup.version>
+		<icu4j.version>77.1</icu4j.version>
+		<hwpxlib.version>1.0.5</hwpxlib.version>
+		<hwplib.version>1.1.1</hwplib.version>
+		<pdfbox.version>3.0.3</pdfbox.version>
+	</properties>
+
+	<dependencies>
+		<!-- 웹 계층: REST 컨트롤러 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<!-- 영속 계층: JPA + Flyway + MySQL -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-mysql</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- 운영 관측 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!-- 메일 발송 (alerter.js 이식분) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
+		<!-- API 문서 -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc.version}</version>
+		</dependency>
+
+		<!-- 엑셀 내보내기 (exceljs 대체) -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>${poi.version}</version>
+		</dependency>
+
+		<!-- HTML 파싱 (price-web 스크래핑 이식분) -->
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>${jsoup.version}</version>
+		</dependency>
+
+		<!--
+			첨부(규격서) 텍스트 추출. 원본 lib/hwp.js + lib/files.js 의 이식 대상.
+			HWPX 는 hwpxlib(OLE/CFB 가 아니라 zip+xml 이라 순수 Java 로 안전),
+			PDF 는 PDFBox 로 뽑고, 둘 다 attachment.DocumentTextExtractor 의 공통
+			규격(ParsedDocument: 파일명 + markdown 텍스트)으로 맞춘다.
+			구형 HWP 5.0 바이너리는 이 라이브러리로 못 읽는다 — porting-status.md 의
+			사이드카 권고대로 별도다. 지금 규격서 첨부는 대부분 HWPX/PDF 다.
+		-->
+		<dependency>
+			<groupId>kr.dogfoot</groupId>
+			<artifactId>hwpxlib</artifactId>
+			<version>${hwpxlib.version}</version>
+		</dependency>
+		<!--
+			구형 HWP 5.0 바이너리(OLE/CFB). 나라장터 규격서에 아직 .hwp 가 흔해 이식했다.
+			hwplib 의 표 추출은 hwpxlib 과 정확히 같진 않지만(porting-status.md 주의), 규격서를
+			"못 읽어서 통째로 건너뛰는 것"보다 낫다 — 텍스트만 뽑아 부품 추출·규격서 채점에 쓴다.
+		-->
+		<dependency>
+			<groupId>kr.dogfoot</groupId>
+			<artifactId>hwplib</artifactId>
+			<version>${hwplib.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>${pdfbox.version}</version>
+		</dependency>
+
+		<!--
+			ICU4J — 분석 입력 해시(analysisInputHash)의 첨부파일 정렬 전용.
+			원본 Node 는 String.prototype.localeCompare 로 정렬하는데 그것이 곧 ICU 대조(collation)다.
+			java.text.Collator 는 UCA 기반이지만 표가 달라 실측에서 어긋난다 —
+			하이픈·밑줄·공백·대소문자·한자 섞인 첨부파일명에서 순서가 갈렸고,
+			순서가 하나만 갈려도 해시가 달라져 기존 분석 캐시가 통째로 고아가 된다.
+			(AnalysisInputHasher 의 주석에 실측 근거를 적어 두었다.)
+		-->
+		<dependency>
+			<groupId>com.ibm.icu</groupId>
+			<artifactId>icu4j</artifactId>
+			<version>${icu4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- 테스트 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-flyway-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<parameters>true</parameters>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</path>
+						<path>
+							<groupId>org.springframework.boot</groupId>
+							<artifactId>spring-boot-configuration-processor</artifactId>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

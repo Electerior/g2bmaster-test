@@ -1,0 +1,243 @@
+/*
+ * 배지 계열 — 원본 style.css 의 .badge / .source-badge / .notice-status / .opp-cell /
+ * .req-tag / .method-stack / .dday-expired 를 옮긴 것. 색은 palette.css 의 변수를 쓴다.
+ */
+
+/* 일반 배지 (낙찰률 등) — 원본 .badge */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: var(--fs-badge);
+  font-weight: 600;
+  background: var(--blue-soft);
+  color: var(--primary);
+}
+
+/* 금액 — 원본 .amt */
+.amt {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* 구분 배지(물품·용역·공사·외자) — 원본 formatCell 'type-badge' 의 인라인 스타일을 클래스로. */
+.type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.type-badge.type-goods {
+  color: var(--type-goods-fg);
+  background: var(--type-goods-bg);
+}
+.type-badge.type-service {
+  color: var(--type-service-fg);
+  background: var(--type-service-bg);
+}
+.type-badge.type-works {
+  color: var(--type-works-fg);
+  background: var(--type-works-bg);
+}
+.type-badge.type-foreign {
+  color: var(--type-foreign-fg);
+  background: var(--type-foreign-bg);
+}
+.type-badge.type-etc {
+  color: var(--type-etc-fg);
+  background: var(--type-etc-bg);
+}
+
+.source-badge,
+.notice-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.source-g2b {
+  color: var(--source-g2b-fg);
+  background: var(--source-g2b-bg);
+  border: 1px solid var(--source-g2b-border);
+}
+.source-d2b {
+  color: var(--source-d2b-fg);
+  background: var(--source-d2b-bg);
+  border: 1px solid var(--source-d2b-border);
+}
+.source-private-g2b {
+  color: var(--source-private-fg);
+  background: var(--source-private-bg);
+}
+.status-active {
+  color: var(--status-active-fg);
+  background: var(--status-active-bg);
+  border: 1px solid var(--status-active-border);
+}
+.status-completed {
+  color: var(--status-completed-fg);
+  background: var(--status-completed-bg);
+  border: 1px solid var(--status-completed-border);
+}
+.status-cancelled {
+  color: var(--status-cancelled-fg);
+  background: var(--status-cancelled-bg);
+  border: 1px solid var(--status-cancelled-border);
+}
+
+/* ── 수주기회 ───────────────────────────────────────────────────────────── */
+.opp-cell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 78px;
+  padding: 5px 7px;
+  border-radius: 7px;
+  border: 1px solid var(--opp-border);
+  background: var(--opp-bg);
+  color: var(--opp-fg);
+  line-height: 1.15;
+}
+.opp-cell strong {
+  font-size: var(--fs-table);
+  font-weight: 900;
+}
+.opp-cell span {
+  font-size: var(--fs-badge);
+  font-weight: 800;
+}
+.opp-cell em {
+  font-size: var(--fs-badge-sm);
+  font-style: normal;
+  color: var(--opp-note-fg);
+  white-space: nowrap;
+}
+.opp-s {
+  background: var(--opp-s-bg);
+  border-color: var(--opp-s-border);
+  color: var(--opp-s-fg);
+}
+.opp-a {
+  background: var(--opp-a-bg);
+  border-color: var(--opp-a-border);
+  color: var(--opp-a-fg);
+}
+.opp-b {
+  background: var(--opp-b-bg);
+  border-color: var(--opp-b-border);
+  color: var(--opp-b-fg);
+}
+.opp-c {
+  background: var(--opp-c-bg);
+  border-color: var(--opp-c-border);
+  color: var(--opp-c-fg);
+}
+.opp-d {
+  background: var(--opp-d-bg);
+  border-color: var(--opp-d-border);
+  color: var(--opp-d-fg);
+}
+.spec-lock-badge {
+  margin-top: 3px;
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: var(--speclock-bg);
+  border: 1px solid var(--speclock-border);
+  color: var(--speclock-fg);
+  font-size: var(--fs-badge-sm);
+  font-weight: 800;
+  line-height: 1.25;
+  white-space: normal;
+  word-break: keep-all;
+}
+
+/* ── 계약/낙찰 · 제한/자격 ─────────────────────────────────────────────── */
+.method-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 92px;
+  max-width: 150px;
+}
+.method-stack span {
+  color: var(--text);
+  font-size: var(--fs-meta);
+  line-height: 1.35;
+}
+.method-stack span:first-child {
+  color: var(--primary);
+  font-weight: 700;
+}
+.req-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  min-width: 0;
+  max-width: 150px;
+}
+.req-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 9px;
+  background: var(--reqtag-bg);
+  color: var(--reqtag-fg);
+  border: 1px solid var(--reqtag-border);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: normal;
+  word-break: keep-all;
+}
+
+/* ── D-DAY ─────────────────────────────────────────────────────────────── */
+.dday {
+  font-weight: 700;
+  font-size: var(--fs-meta);
+  white-space: nowrap;
+}
+.dday-expired {
+  color: var(--dday-expired-fg);
+  font-size: var(--fs-badge);
+  background: var(--dday-expired-bg);
+  border-radius: 8px;
+  padding: 1px 7px;
+}
+
+/* ── 단가 조회 상태 배지 (원본 .prod-price-status) ─────────────────────── */
+.price-status {
+  display: inline-block;
+  color: var(--source-d2b-fg);
+  background: var(--source-d2b-bg);
+  border: 1px solid var(--source-d2b-border);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-size: var(--fs-badge-sm);
+  font-weight: 700;
+}
+.price-status + .price-status {
+  margin-left: 3px;
+}
+.price-status.tone-ok {
+  color: var(--won-badge-fg);
+  background: var(--ofc-service-bg);
+  border-color: var(--corp-won-hover);
+}
+.price-status.tone-bad {
+  color: var(--gap-over-fg);
+  background: var(--status-cancelled-bg);
+  border-color: var(--blocking-pop-border);
+}
+
+/* 값 없음 표식 — 원본은 <span style="color:#bbb">-</span> 였다. */
+.cell-empty {
+  color: var(--table-empty-fg);
+}

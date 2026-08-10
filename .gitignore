@@ -1,0 +1,32 @@
+# 세 저장소를 한 리포로 합치면서 둔 안전망.
+#
+# 각 하위 디렉토리의 .gitignore 는 부모 리포에서도 그대로 적용되므로 원칙적으로는
+# 이 파일이 없어도 된다. 다만 하위 규칙에 구멍이 있어서(예: g2bmaster-AI 에는
+# node_modules 규칙이 없고, 실제로 package.json 도 없는 81M 잔여 트리가 있었다)
+# 저장소를 가로질러 한 번 더 막는다. 하위 .gitignore 를 대체하지 않고 덧댄다.
+
+# 의존성·가상환경 — 매니페스트로 재현되므로 커밋하지 않는다
+node_modules/
+.venv/
+venv/
+
+# 빌드 산출물
+target/
+dist/
+build/
+*.tsbuildinfo
+
+# 파이썬 캐시
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# 접속 정보·비밀값. *.example 만 커밋한다
+.env
+.env.local
+!.env.example
+
+# 로그·에디터·OS
+*.log
+.DS_Store
+.idea/

@@ -1,0 +1,1471 @@
+{
+  "_generatedBy": "tools/gen-g2b-operations.js",
+  "_source": "g2bmastersopen/lib/g2b-operations.js",
+  "genericTable": "raw_generic_list",
+  "curatedOperations": {
+    "BidPublicInfoService": [
+      {
+        "op": "getBidPblancListInfoThng",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getBidPblancListInfoCnstwk",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getBidPblancListInfoServc",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getBidPblancListInfoFrgcpt",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getBidPblancListInfoThngPPSSrch",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getBidPblancListInfoCnstwkPPSSrch",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getBidPblancListInfoServcPPSSrch",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getBidPblancListInfoFrgcptPPSSrch",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getBidPblancListBidPrceCalclAInfo",
+        "inqryDivs": [
+          "1",
+          "2"
+        ],
+        "windowed": true
+      }
+    ],
+    "ScsbidInfoService": [
+      {
+        "op": "getOpengResultListInfoThng",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getOpengResultListInfoCnstwk",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getOpengResultListInfoServc",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getOpengResultListInfoFrgcpt",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getOpengResultListInfoThngPPSSrch",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getOpengResultListInfoCnstwkPPSSrch",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getOpengResultListInfoServcPPSSrch",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getOpengResultListInfoFrgcptPPSSrch",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      }
+    ],
+    "CntrctInfoService": [
+      {
+        "op": "getCntrctInfoListThng",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getCntrctInfoListCnstwk",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getCntrctInfoListServc",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getCntrctInfoListFrgcpt",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getCntrctInfoListThngPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListCnstwkPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListServcPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListFrgcptPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "HrcspSsstndrdInfoService": [
+      {
+        "op": "getPublicPrcureThngInfoThng",
+        "inqryDivs": [
+          "1",
+          "3"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getPublicPrcureThngInfoServc",
+        "inqryDivs": [
+          "1",
+          "3"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getPublicPrcureThngInfoThngPPSSrch",
+        "inqryDivs": [
+          "1",
+          "3"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getPublicPrcureThngInfoServcPPSSrch",
+        "inqryDivs": [
+          "1",
+          "3"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getInsttAcctoThngListInfoThng",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getInsttAcctoThngListInfoServc",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getThngDetailMetaInfoThng",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getThngDetailMetaInfoServc",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "PrcrmntReqInfoService": [
+      {
+        "op": "getPrcrmntReqInfoListThng",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getPrcrmntReqInfoListGnrlServc",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getPrcrmntReqInfoListThngPPSSrch",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      },
+      {
+        "op": "getPrcrmntReqInfoListGnrlServcPPSSrch",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": true
+      }
+    ],
+    "OrderPlanSttusService": [
+      {
+        "op": "getOrderPlanSttusListThng",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": false
+      },
+      {
+        "op": "getOrderPlanSttusListCnstwk",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": false
+      },
+      {
+        "op": "getOrderPlanSttusListServc",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": false
+      },
+      {
+        "op": "getOrderPlanSttusListFrgcpt",
+        "inqryDivs": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "windowed": false
+      },
+      {
+        "op": "getOrderPlanSttusListThngPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getOrderPlanSttusListCnstwkPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getOrderPlanSttusListServcPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getOrderPlanSttusListFrgcptPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "PrdctMngInfoService": [
+      {
+        "op": "getPrdctClsfcNoUslfsvc",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "IndstrytyBaseLawrgltInfoService": [
+      {
+        "op": "getIndstrytyBaseLawrgltInfoList02",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "PubPrcrmntStatInfoService": [
+      {
+        "op": "getTotlPubPrcrmntSttus",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "CntrctProcssIntgOpenService": [
+      {
+        "op": "getCntrctProcssIntgOpenThng",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctProcssIntgOpenCnstwk",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctProcssIntgOpenServc",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctProcssIntgOpenFrgcpt",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "UsrInfoService": [
+      {
+        "op": "getDminsttInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntCorpBasicInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntCorpIndstrytyInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntCorpSplyPrdctInfo",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "ThngListInfoService": [
+      {
+        "op": "getPrdctClsfcNoUnit2Info",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrdctClsfcNoUnit4Info",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrdctClsfcNoUnit6Info",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrdctClsfcNoUnit8Info",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrdctClsfcNoUnit10Info",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getThngGuidanceMapInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getThngPrdnmLocplcAccotListInfoInfoPrdnmSearch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getThngPrdnmLocplcAccotListInfoInfoPrdlstSearch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getThngPrdnmLocplcAccotListInfoInfoLocplcSearch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getThngListClChangeHistInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getLsfgdNdPrdlstChghstlnfoSttus",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrdctClsfcNoChgHstry",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ]
+  },
+  "specOperations": {
+    "BidPublicInfoService": [
+      {
+        "op": "getBidPblancListEvaluationIndstrytyMfrcInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoChgHstryCnstwk",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoChgHstryServc",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoChgHstryThng",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoCnstwkBsisAmount",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoEorderAtchFileInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoEtc",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoEtcPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoFrgcptPurchsObjPrdct",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoLicenseLimit",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoPrtcptPsblRgn",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoServcBsisAmount",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoServcPurchsObjPrdct",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoThngBsisAmount",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListInfoThngPurchsObjPrdct",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getBidPblancListPPIFnlRfpIssAtchFileInfo",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "CntrctInfoService": [
+      {
+        "op": "getCntrctInfoListCnstwkChgHstry",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListCnstwkDltHstry",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListCnstwkServcInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListFrgcptChgHstry",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListFrgcptDetail",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListFrgcptDltHstry",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListGnrlServcServcInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListServcChgHstry",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListServcDltHstry",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListTechServcServcInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListThngChgHstry",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListThngDetail",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getCntrctInfoListThngDltHstry",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "HrcspSsstndrdInfoService": [
+      {
+        "op": "getInsttAcctoThngListInfoCnstwk",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getInsttAcctoThngListInfoFrgcpt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPublicPrcureThngInfoCnstwk",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPublicPrcureThngInfoCnstwkPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPublicPrcureThngInfoFrgcpt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPublicPrcureThngInfoFrgcptPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPublicPrcureThngOpinionInfoCnstwk",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPublicPrcureThngOpinionInfoFrgcpt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPublicPrcureThngOpinionInfoServc",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPublicPrcureThngOpinionInfoThng",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getThngDetailMetaInfoCnstwk",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getThngDetailMetaInfoFrgcpt",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "PrcrmntReqInfoService": [
+      {
+        "op": "getPrcrmntReqInfoListCnstwk",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntReqInfoListCnstwkPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntReqInfoListFrgcpt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntReqInfoListFrgcptDetail",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntReqInfoListFrgcptPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntReqInfoListTechServc",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntReqInfoListTechServcPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntReqInfoListThngDetail",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "PriceInfoService": [
+      {
+        "op": "getCnsttyClsfcInfoList",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getNetRsceinfoList",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPriceInfoListFcltyCmmnMtrilBildng",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPriceInfoListFcltyCmmnMtrilElctyIrmc",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPriceInfoListFcltyCmmnMtrilEngrk",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPriceInfoListFcltyCmmnMtrilMchnEqp",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPriceInfoListFcltyCmmnMtrilTotal",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPriceInfoListMrktCnstrctPcBildng",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPriceInfoListMrktCnstrctPcEngrk",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPriceInfoListMrktCnstrctPcMchnEqp",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getStdMarkUprcinfoList",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "PrvtBidNtceService": [
+      {
+        "op": "getPrvtBidPblancListInfoCnstwk",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtBidPblancListInfoCnstwkPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtBidPblancListInfoEtc",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtBidPblancListInfoEtcPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtBidPblancListInfoLicenseLimit",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtBidPblancListInfoPrtcptPsblRgn",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtBidPblancListInfoServc",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtBidPblancListInfoServcPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtBidPblancListInfoThng",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtBidPblancListInfoThngPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "PrvtCntrctInfoService": [
+      {
+        "op": "getPrvtCntrctInfoList",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtCntrctInfoListChgHstry",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtCntrctInfoListDltHstry",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtCntrctInfoListPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "PrvtScsbidInfoService": [
+      {
+        "op": "getPrvtOpengResultListInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtOpengResultListInfoFailing",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtOpengResultListInfoOpengCompt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtOpengResultListInfoPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtOpengResultListInfoRebid",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtScsbidListSttus",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrvtScsbidListSttusPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "PubDataOpnStdService": [
+      {
+        "op": "getDataSetOpnStdBidPblancInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getDataSetOpnStdCntrctInfo",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getDataSetOpnStdScsbidInfo",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "PubPrcrmntStatInfoService": [
+      {
+        "op": "getCntrctMthdAccotSttus",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getDminsttAccotBsnsObjAccotArslt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getDminsttAccotCntrctMthdAccotArslt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getDminsttAccotEntrprsDivAccotArslt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getDminsttAccotSystmTyAccotArslt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getEntrprsDivAccotPrcrmntSttus",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getInsttDivAccotPrcrmntSttus",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntEntrprsAccotBsnsObjAccotArslt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntEntrprsAccotCntrctMthdAccotArslt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrcrmntObjectBsnsObjAccotSttus",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getPrdctIdntNoServcAccotArslt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getRgnDutyCmmnCntrctSttus",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getRgnLmtSttus",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "ScsbidInfoService": [
+      {
+        "op": "getOpengResultListInfoCnstwkPreparPcDetail",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getOpengResultListInfoFailing",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getOpengResultListInfoFrgcptPreparPcDetail",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getOpengResultListInfoOpengCompt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getOpengResultListInfoRebid",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getOpengResultListInfoServcPreparPcDetail",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getOpengResultListInfoThngPreparPcDetail",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getScsbidListSttusCnstwk",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getScsbidListSttusCnstwkPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getScsbidListSttusFrgcpt",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getScsbidListSttusFrgcptPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getScsbidListSttusServc",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getScsbidListSttusServcPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getScsbidListSttusThng",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getScsbidListSttusThngPPSSrch",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ],
+    "ShoppingMallPrdctInfoService05": [
+      {
+        "op": "getDlvrReqDtlInfoList",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getDlvrReqInfoList",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getMASCntrctPrdctInfoList",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getShoppingMallPrdctInfoList",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getSpcifyPrdlstPrcureInfoList",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getSpcifyPrdlstPrcureTotList",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getThptyUcntrctPrdctInfoList",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getUcntrctPrdctInfoList",
+        "inqryDivs": [],
+        "windowed": false
+      },
+      {
+        "op": "getVntrPrdctOrderDealDtlsInfoList",
+        "inqryDivs": [],
+        "windowed": false
+      }
+    ]
+  },
+  "servicePath": {
+    "BidPublicInfoService": "/ad/BidPublicInfoService",
+    "CntrctInfoService": "/ao/CntrctInfoService",
+    "HrcspSsstndrdInfoService": "/ao/HrcspSsstndrdInfoService",
+    "PrcrmntReqInfoService": "/ao/PrcrmntReqInfoService",
+    "PriceInfoService": "/ao/PriceInfoService",
+    "PrvtBidNtceService": "/ao/PrvtBidNtceService",
+    "PrvtCntrctInfoService": "/ao/PrvtCntrctInfoService",
+    "PrvtScsbidInfoService": "/ao/PrvtScsbidInfoService",
+    "PubDataOpnStdService": "/ao/PubDataOpnStdService",
+    "PubPrcrmntStatInfoService": "/at/PubPrcrmntStatInfoService",
+    "ScsbidInfoService": "/as/ScsbidInfoService",
+    "ShoppingMallPrdctInfoService05": "/at/ShoppingMallPrdctInfoService05",
+    "OrderPlanSttusService": "/ao/OrderPlanSttusService",
+    "PrdctMngInfoService": "/ao/PrdctMngInfoService",
+    "IndstrytyBaseLawrgltInfoService": "/ao/IndstrytyBaseLawrgltInfoService",
+    "CntrctProcssIntgOpenService": "/ao/CntrctProcssIntgOpenService",
+    "UsrInfoService": "/ao/UsrInfoService",
+    "ThngListInfoService": "/ao/ThngListInfoService"
+  },
+  "operationTable": {
+    "getBidPblancListEvaluationIndstrytyMfrcInfo": "stg_bid_pblanc_list_evaluation_indstryty_mfrc_info",
+    "getBidPblancListInfoChgHstryCnstwk": "stg_bid_pblanc_list_info_chg_hstry_thng",
+    "getBidPblancListInfoChgHstryServc": "stg_bid_pblanc_list_info_chg_hstry_thng",
+    "getBidPblancListInfoChgHstryThng": "stg_bid_pblanc_list_info_chg_hstry_thng",
+    "getBidPblancListInfoCnstwkBsisAmount": "stg_bid_pblanc_list_info_cnstwk_bsis_amount",
+    "getBidPblancListInfoEorderAtchFileInfo": "stg_bid_pblanc_list_info_eorder_atch_file_info",
+    "getBidPblancListInfoEtc": "stg_bid_pblanc_list_info_etc",
+    "getBidPblancListInfoEtcPPSSrch": "stg_bid_pblanc_list_info_etc",
+    "getBidPblancListInfoFrgcptPurchsObjPrdct": "stg_bid_pblanc_list_info_frgcpt_purchs_obj_prdct",
+    "getBidPblancListInfoLicenseLimit": "stg_bid_pblanc_list_info_license_limit",
+    "getBidPblancListInfoPrtcptPsblRgn": "stg_bid_pblanc_list_info_prtcpt_psbl_rgn",
+    "getBidPblancListInfoServcBsisAmount": "stg_bid_pblanc_list_info_servc_bsis_amount",
+    "getBidPblancListInfoServcPurchsObjPrdct": "stg_bid_pblanc_list_info_thng_purchs_obj_prdct",
+    "getBidPblancListInfoThngBsisAmount": "stg_bid_pblanc_list_info_thng_bsis_amount",
+    "getBidPblancListInfoThngPurchsObjPrdct": "stg_bid_pblanc_list_info_thng_purchs_obj_prdct",
+    "getBidPblancListPPIFnlRfpIssAtchFileInfo": "stg_bid_pblanc_list_p_p_i_fnl_rfp_iss_atch_file_info",
+    "getCntrctInfoListCnstwkChgHstry": "stg_cntrct_info_list_cnstwk_chg_hstry",
+    "getCntrctInfoListCnstwkDltHstry": "stg_cntrct_info_list_thng_dlt_hstry",
+    "getCntrctInfoListCnstwkServcInfo": "stg_cntrct_info_list_cnstwk_servc_info",
+    "getCntrctInfoListFrgcptChgHstry": "stg_cntrct_info_list_frgcpt_chg_hstry",
+    "getCntrctInfoListFrgcptDetail": "stg_cntrct_info_list_frgcpt_detail",
+    "getCntrctInfoListFrgcptDltHstry": "stg_cntrct_info_list_thng_dlt_hstry",
+    "getCntrctInfoListGnrlServcServcInfo": "stg_cntrct_info_list_gnrl_servc_servc_info",
+    "getCntrctInfoListServcChgHstry": "stg_cntrct_info_list_servc_chg_hstry",
+    "getCntrctInfoListServcDltHstry": "stg_cntrct_info_list_thng_dlt_hstry",
+    "getCntrctInfoListTechServcServcInfo": "stg_cntrct_info_list_tech_servc_servc_info",
+    "getCntrctInfoListThngChgHstry": "stg_cntrct_info_list_thng_chg_hstry",
+    "getCntrctInfoListThngDetail": "stg_cntrct_info_list_thng_detail",
+    "getCntrctInfoListThngDltHstry": "stg_cntrct_info_list_thng_dlt_hstry",
+    "getInsttAcctoThngListInfoCnstwk": "stg_public_prcure_thng_info_frgcpt",
+    "getInsttAcctoThngListInfoFrgcpt": "stg_public_prcure_thng_info_frgcpt",
+    "getPublicPrcureThngInfoCnstwk": "stg_public_prcure_thng_info_frgcpt",
+    "getPublicPrcureThngInfoCnstwkPPSSrch": "stg_public_prcure_thng_info_frgcpt",
+    "getPublicPrcureThngInfoFrgcpt": "stg_public_prcure_thng_info_frgcpt",
+    "getPublicPrcureThngInfoFrgcptPPSSrch": "stg_public_prcure_thng_info_frgcpt",
+    "getPublicPrcureThngOpinionInfoCnstwk": "stg_public_prcure_thng_opinion_info_thng",
+    "getPublicPrcureThngOpinionInfoFrgcpt": "stg_public_prcure_thng_opinion_info_thng",
+    "getPublicPrcureThngOpinionInfoServc": "stg_public_prcure_thng_opinion_info_thng",
+    "getPublicPrcureThngOpinionInfoThng": "stg_public_prcure_thng_opinion_info_thng",
+    "getThngDetailMetaInfoCnstwk": "stg_public_prcure_thng_info_frgcpt",
+    "getThngDetailMetaInfoFrgcpt": "stg_public_prcure_thng_info_frgcpt",
+    "getPrcrmntReqInfoListCnstwk": "stg_prcrmnt_req_info_list_cnstwk",
+    "getPrcrmntReqInfoListCnstwkPPSSrch": "stg_prcrmnt_req_info_list_cnstwk",
+    "getPrcrmntReqInfoListFrgcpt": "stg_prcrmnt_req_info_list_frgcpt",
+    "getPrcrmntReqInfoListFrgcptDetail": "stg_prcrmnt_req_info_list_frgcpt_detail",
+    "getPrcrmntReqInfoListFrgcptPPSSrch": "stg_prcrmnt_req_info_list_frgcpt",
+    "getPrcrmntReqInfoListTechServc": "stg_prcrmnt_req_info_list_tech_servc",
+    "getPrcrmntReqInfoListTechServcPPSSrch": "stg_prcrmnt_req_info_list_tech_servc",
+    "getPrcrmntReqInfoListThngDetail": "stg_prcrmnt_req_info_list_thng_detail",
+    "getCnsttyClsfcInfoList": "stg_cnstty_clsfc_info_list",
+    "getNetRsceinfoList": "stg_net_rsceinfo_list",
+    "getPriceInfoListFcltyCmmnMtrilBildng": "stg_price_info_list_fclty_cmmn_mtril_engrk",
+    "getPriceInfoListFcltyCmmnMtrilElctyIrmc": "stg_price_info_list_fclty_cmmn_mtril_engrk",
+    "getPriceInfoListFcltyCmmnMtrilEngrk": "stg_price_info_list_fclty_cmmn_mtril_engrk",
+    "getPriceInfoListFcltyCmmnMtrilMchnEqp": "stg_price_info_list_fclty_cmmn_mtril_engrk",
+    "getPriceInfoListFcltyCmmnMtrilTotal": "stg_price_info_list_fclty_cmmn_mtril_engrk",
+    "getPriceInfoListMrktCnstrctPcBildng": "stg_price_info_list_fclty_cmmn_mtril_engrk",
+    "getPriceInfoListMrktCnstrctPcEngrk": "stg_price_info_list_fclty_cmmn_mtril_engrk",
+    "getPriceInfoListMrktCnstrctPcMchnEqp": "stg_price_info_list_fclty_cmmn_mtril_engrk",
+    "getStdMarkUprcinfoList": "stg_std_mark_uprcinfo_list",
+    "getPrvtBidPblancListInfoCnstwk": "stg_prvt_bid_pblanc_list_info_cnstwk",
+    "getPrvtBidPblancListInfoCnstwkPPSSrch": "stg_prvt_bid_pblanc_list_info_cnstwk",
+    "getPrvtBidPblancListInfoEtc": "stg_prvt_bid_pblanc_list_info_etc",
+    "getPrvtBidPblancListInfoEtcPPSSrch": "stg_prvt_bid_pblanc_list_info_etc",
+    "getPrvtBidPblancListInfoLicenseLimit": "stg_prvt_bid_pblanc_list_info_license_limit",
+    "getPrvtBidPblancListInfoPrtcptPsblRgn": "stg_prvt_bid_pblanc_list_info_prtcpt_psbl_rgn",
+    "getPrvtBidPblancListInfoServc": "stg_prvt_bid_pblanc_list_info_servc",
+    "getPrvtBidPblancListInfoServcPPSSrch": "stg_prvt_bid_pblanc_list_info_servc",
+    "getPrvtBidPblancListInfoThng": "stg_prvt_bid_pblanc_list_info_thng",
+    "getPrvtBidPblancListInfoThngPPSSrch": "stg_prvt_bid_pblanc_list_info_thng",
+    "getPrvtCntrctInfoList": "stg_prvt_cntrct_info_list",
+    "getPrvtCntrctInfoListChgHstry": "stg_prvt_cntrct_info_list",
+    "getPrvtCntrctInfoListDltHstry": "stg_prvt_cntrct_info_list_dlt_hstry",
+    "getPrvtCntrctInfoListPPSSrch": "stg_prvt_cntrct_info_list",
+    "getPrvtOpengResultListInfo": "stg_prvt_openg_result_list_info",
+    "getPrvtOpengResultListInfoFailing": "stg_prvt_openg_result_list_info_failing",
+    "getPrvtOpengResultListInfoOpengCompt": "stg_prvt_openg_result_list_info_openg_compt",
+    "getPrvtOpengResultListInfoPPSSrch": "stg_prvt_openg_result_list_info",
+    "getPrvtOpengResultListInfoRebid": "stg_prvt_openg_result_list_info_rebid",
+    "getPrvtScsbidListSttus": "stg_prvt_scsbid_list_sttus",
+    "getPrvtScsbidListSttusPPSSrch": "stg_prvt_scsbid_list_sttus",
+    "getDataSetOpnStdBidPblancInfo": "stg_data_set_opn_std_bid_pblanc_info",
+    "getDataSetOpnStdCntrctInfo": "stg_data_set_opn_std_cntrct_info",
+    "getDataSetOpnStdScsbidInfo": "stg_data_set_opn_std_scsbid_info",
+    "getCntrctMthdAccotSttus": "stg_cntrct_mthd_accot_sttus",
+    "getDminsttAccotBsnsObjAccotArslt": "stg_dminstt_accot_bsns_obj_accot_arslt",
+    "getDminsttAccotCntrctMthdAccotArslt": "stg_dminstt_accot_cntrct_mthd_accot_arslt",
+    "getDminsttAccotEntrprsDivAccotArslt": "stg_dminstt_accot_entrprs_div_accot_arslt",
+    "getDminsttAccotSystmTyAccotArslt": "stg_dminstt_accot_systm_ty_accot_arslt",
+    "getEntrprsDivAccotPrcrmntSttus": "stg_entrprs_div_accot_prcrmnt_sttus",
+    "getInsttDivAccotPrcrmntSttus": "stg_instt_div_accot_prcrmnt_sttus",
+    "getPrcrmntEntrprsAccotBsnsObjAccotArslt": "stg_prcrmnt_entrprs_accot_bsns_obj_accot_arslt",
+    "getPrcrmntEntrprsAccotCntrctMthdAccotArslt": "stg_prcrmnt_entrprs_accot_cntrct_mthd_accot_arslt",
+    "getPrcrmntObjectBsnsObjAccotSttus": "stg_prcrmnt_object_bsns_obj_accot_sttus",
+    "getPrdctIdntNoServcAccotArslt": "stg_prdct_idnt_no_servc_accot_arslt",
+    "getRgnDutyCmmnCntrctSttus": "stg_rgn_duty_cmmn_cntrct_sttus",
+    "getRgnLmtSttus": "stg_rgn_lmt_sttus",
+    "getOpengResultListInfoCnstwkPreparPcDetail": "stg_openg_result_list_info_thng_prepar_pc_detail",
+    "getOpengResultListInfoFailing": "stg_openg_result_list_info_failing",
+    "getOpengResultListInfoFrgcptPreparPcDetail": "stg_openg_result_list_info_thng_prepar_pc_detail",
+    "getOpengResultListInfoOpengCompt": "stg_openg_result_list_info_openg_compt",
+    "getOpengResultListInfoRebid": "stg_openg_result_list_info_rebid",
+    "getOpengResultListInfoServcPreparPcDetail": "stg_openg_result_list_info_thng_prepar_pc_detail",
+    "getOpengResultListInfoThngPreparPcDetail": "stg_openg_result_list_info_thng_prepar_pc_detail",
+    "getScsbidListSttusCnstwk": "stg_scsbid_list_sttus_thng",
+    "getScsbidListSttusCnstwkPPSSrch": "stg_scsbid_list_sttus_thng",
+    "getScsbidListSttusFrgcpt": "stg_scsbid_list_sttus_frgcpt",
+    "getScsbidListSttusFrgcptPPSSrch": "stg_scsbid_list_sttus_thng",
+    "getScsbidListSttusServc": "stg_scsbid_list_sttus_thng",
+    "getScsbidListSttusServcPPSSrch": "stg_scsbid_list_sttus_thng",
+    "getScsbidListSttusThng": "stg_scsbid_list_sttus_thng",
+    "getScsbidListSttusThngPPSSrch": "stg_scsbid_list_sttus_thng",
+    "getDlvrReqDtlInfoList": "stg_dlvr_req_dtl_info_list",
+    "getDlvrReqInfoList": "stg_dlvr_req_info_list",
+    "getMASCntrctPrdctInfoList": "stg_m_a_s_cntrct_prdct_info_list",
+    "getShoppingMallPrdctInfoList": "stg_shopping_mall_prdct_info_list",
+    "getSpcifyPrdlstPrcureInfoList": "stg_spcify_prdlst_prcure_info_list",
+    "getSpcifyPrdlstPrcureTotList": "stg_spcify_prdlst_prcure_tot_list",
+    "getThptyUcntrctPrdctInfoList": "stg_m_a_s_cntrct_prdct_info_list",
+    "getUcntrctPrdctInfoList": "stg_m_a_s_cntrct_prdct_info_list",
+    "getVntrPrdctOrderDealDtlsInfoList": "stg_vntr_prdct_order_deal_dtls_info_list",
+    "getDminsttInfo": "dm_institution",
+    "getPrcrmntCorpBasicInfo": "dm_supplier",
+    "getPrcrmntCorpIndstrytyInfo": "dm_supplier_industry",
+    "getPrcrmntCorpSplyPrdctInfo": "dm_supplier_product",
+    "getPrdctClsfcNoUnit2Info": "dm_product_classification",
+    "getPrdctClsfcNoUnit4Info": "dm_product_classification",
+    "getPrdctClsfcNoUnit6Info": "dm_product_classification",
+    "getPrdctClsfcNoUnit8Info": "dm_product_classification",
+    "getThngGuidanceMapInfo": "dm_product_classification",
+    "getPrdctClsfcNoUnit10Info": "dm_detail_product_classification",
+    "getThngPrdnmLocplcAccotListInfoInfoPrdnmSearch": "dm_detail_product_classification",
+    "getThngPrdnmLocplcAccotListInfoInfoPrdlstSearch": "dm_product_item",
+    "getThngPrdnmLocplcAccotListInfoInfoLocplcSearch": null,
+    "getThngListClChangeHistInfo": null,
+    "getLsfgdNdPrdlstChghstlnfoSttus": null,
+    "getPrdctClsfcNoChgHstry": null
+  },
+  "pkColumns": {
+    "stg_bid_pblanc_list_evaluation_indstryty_mfrc_info": [],
+    "stg_bid_pblanc_list_info_chg_hstry_thng": [],
+    "stg_bid_pblanc_list_info_cnstwk_bsis_amount": [],
+    "stg_bid_pblanc_list_info_eorder_atch_file_info": [],
+    "stg_bid_pblanc_list_info_etc": [],
+    "stg_bid_pblanc_list_info_frgcpt_purchs_obj_prdct": [],
+    "stg_bid_pblanc_list_info_license_limit": [],
+    "stg_bid_pblanc_list_info_prtcpt_psbl_rgn": [],
+    "stg_bid_pblanc_list_info_servc_bsis_amount": [],
+    "stg_bid_pblanc_list_info_thng_bsis_amount": [],
+    "stg_bid_pblanc_list_info_thng_purchs_obj_prdct": [],
+    "stg_bid_pblanc_list_p_p_i_fnl_rfp_iss_atch_file_info": [],
+    "stg_cnstty_clsfc_info_list": [],
+    "stg_cntrct_info_list_cnstwk_chg_hstry": [],
+    "stg_cntrct_info_list_cnstwk_servc_info": [],
+    "stg_cntrct_info_list_frgcpt_chg_hstry": [],
+    "stg_cntrct_info_list_frgcpt_detail": [],
+    "stg_cntrct_info_list_gnrl_servc_servc_info": [],
+    "stg_cntrct_info_list_servc_chg_hstry": [],
+    "stg_cntrct_info_list_tech_servc_servc_info": [],
+    "stg_cntrct_info_list_thng_chg_hstry": [],
+    "stg_cntrct_info_list_thng_detail": [],
+    "stg_cntrct_info_list_thng_dlt_hstry": [],
+    "stg_cntrct_mthd_accot_sttus": [],
+    "stg_data_set_opn_std_bid_pblanc_info": [],
+    "stg_data_set_opn_std_cntrct_info": [],
+    "stg_data_set_opn_std_scsbid_info": [],
+    "stg_dlvr_req_dtl_info_list": [],
+    "stg_dlvr_req_info_list": [],
+    "stg_dminstt_accot_bsns_obj_accot_arslt": [],
+    "stg_dminstt_accot_cntrct_mthd_accot_arslt": [],
+    "stg_dminstt_accot_entrprs_div_accot_arslt": [],
+    "stg_dminstt_accot_systm_ty_accot_arslt": [],
+    "stg_entrprs_div_accot_prcrmnt_sttus": [],
+    "stg_instt_div_accot_prcrmnt_sttus": [],
+    "stg_m_a_s_cntrct_prdct_info_list": [],
+    "stg_net_rsceinfo_list": [],
+    "stg_openg_result_list_info_failing": [],
+    "stg_openg_result_list_info_openg_compt": [],
+    "stg_openg_result_list_info_rebid": [],
+    "stg_openg_result_list_info_thng_prepar_pc_detail": [],
+    "stg_prcrmnt_entrprs_accot_bsns_obj_accot_arslt": [],
+    "stg_prcrmnt_entrprs_accot_cntrct_mthd_accot_arslt": [],
+    "stg_prcrmnt_object_bsns_obj_accot_sttus": [],
+    "stg_prcrmnt_req_info_list_cnstwk": [],
+    "stg_prcrmnt_req_info_list_frgcpt": [],
+    "stg_prcrmnt_req_info_list_frgcpt_detail": [],
+    "stg_prcrmnt_req_info_list_tech_servc": [],
+    "stg_prcrmnt_req_info_list_thng_detail": [],
+    "stg_prdct_idnt_no_servc_accot_arslt": [],
+    "stg_price_info_list_fclty_cmmn_mtril_engrk": [],
+    "stg_prvt_bid_pblanc_list_info_cnstwk": [],
+    "stg_prvt_bid_pblanc_list_info_etc": [],
+    "stg_prvt_bid_pblanc_list_info_license_limit": [],
+    "stg_prvt_bid_pblanc_list_info_prtcpt_psbl_rgn": [],
+    "stg_prvt_bid_pblanc_list_info_servc": [],
+    "stg_prvt_bid_pblanc_list_info_thng": [],
+    "stg_prvt_cntrct_info_list": [],
+    "stg_prvt_cntrct_info_list_dlt_hstry": [],
+    "stg_prvt_openg_result_list_info": [],
+    "stg_prvt_openg_result_list_info_failing": [],
+    "stg_prvt_openg_result_list_info_openg_compt": [],
+    "stg_prvt_openg_result_list_info_rebid": [],
+    "stg_prvt_scsbid_list_sttus": [],
+    "stg_public_prcure_thng_info_frgcpt": [],
+    "stg_public_prcure_thng_opinion_info_thng": [],
+    "stg_rgn_duty_cmmn_cntrct_sttus": [],
+    "stg_rgn_lmt_sttus": [],
+    "stg_scsbid_list_sttus_frgcpt": [],
+    "stg_scsbid_list_sttus_thng": [],
+    "stg_shopping_mall_prdct_info_list": [],
+    "stg_spcify_prdlst_prcure_info_list": [],
+    "stg_spcify_prdlst_prcure_tot_list": [],
+    "stg_std_mark_uprcinfo_list": [],
+    "stg_vntr_prdct_order_deal_dtls_info_list": [],
+    "dwt_bid_notice": [
+      "bid_ntce_no",
+      "bid_ntce_ord"
+    ],
+    "dwt_bid_result": [
+      "bid_ntce_no",
+      "bid_ntce_ord",
+      "bid_clsfc_no",
+      "rbid_no"
+    ],
+    "dwt_bid_attachment": [
+      "bid_ntce_no",
+      "bid_ntce_ord",
+      "file_seq"
+    ],
+    "dwt_pre_specification": [
+      "bf_spec_rgst_no"
+    ],
+    "dwt_contract": [
+      "cntrct_no"
+    ],
+    "dwt_contract_detail": [
+      "detail_id"
+    ],
+    "dwt_contract_process": [
+      "bid_ntce_no",
+      "bid_ntce_ord"
+    ],
+    "dwt_order_plan": [
+      "order_plan_unty_no",
+      "order_plan_sno"
+    ],
+    "dwt_procurement_request": [
+      "prcrmnt_req_no"
+    ],
+    "dm_institution": [
+      "instt_cd"
+    ],
+    "dm_product_classification": [
+      "clsfc_no"
+    ],
+    "dm_detail_product_classification": [
+      "dtl_clsfc_no"
+    ],
+    "dm_industry_law": [
+      "indstry_cd"
+    ],
+    "dm_supplier": [
+      "biz_no"
+    ],
+    "dm_shopping_mall_product": [
+      "prdct_clsfc_no"
+    ],
+    "dm_supplier_industry": [
+      "biz_no",
+      "indstry_cd"
+    ],
+    "dm_supplier_product": [
+      "biz_no",
+      "dtl_clsfc_no"
+    ],
+    "dm_product_item": [
+      "prdct_idnt_no"
+    ]
+  },
+  "serviceTable": {
+    "BidPublicInfoService": "dwt_bid_notice",
+    "ScsbidInfoService": "dwt_bid_result",
+    "CntrctInfoService": "dwt_contract",
+    "HrcspSsstndrdInfoService": "dwt_pre_specification",
+    "PrcrmntReqInfoService": "dwt_procurement_request",
+    "OrderPlanSttusService": "dwt_order_plan"
+  },
+  "importantExtra": [
+    "getOpengResultListInfoThngPreparPcDetail",
+    "getOpengResultListInfoServcPreparPcDetail",
+    "getOpengResultListInfoCnstwkPreparPcDetail",
+    "getOpengResultListInfoFrgcptPreparPcDetail"
+  ]
+}

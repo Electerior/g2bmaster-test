@@ -1,0 +1,168 @@
+spring:
+  application:
+    name: g2bmaster-backend
+
+  # 접속 정보는 환경변수로만 주입한다. 기존 .env 의 PG* 를 MYSQL_* 로 옮긴 것.
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:g2b}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Seoul&rewriteBatchedStatements=true&allowPublicKeyRetrieval=true&useSSL=false
+    username: ${MYSQL_USER:g2b}
+    password: ${MYSQL_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${MYSQL_POOL_MAX:10}
+      minimum-idle: 2
+      connection-timeout: 5000
+      idle-timeout: 30000
+      pool-name: g2b-pool
+
+  jpa:
+    # 스키마의 유일한 출처는 Flyway 다. Hibernate 는 절대 DDL 을 건드리지 않는다.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100
+          time_zone: Asia/Seoul
+        order_inserts: true
+        order_updates: true
+        format_sql: false
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+  jackson:
+    default-property-inclusion: non_null
+    # Jackson 3(Spring Boot 4)에서 날짜 직렬화 옵션이 SerializationFeature 에서
+    # DateTimeFeature 로 옮겨갔다. 옛 키(spring.jackson.serialization.*)를 그대로 두면
+    # 바인딩이 실패해 **기동 자체가 안 된다** — 런타임에 조용히 무시되는 종류가 아니다.
+    datatype:
+      datetime:
+        write-dates-as-timestamps: false
+
+  servlet:
+    multipart:
+      # 첨부파일 업로드(공고 첨부·서약서 원본) 상한. 기존 multer 설정과 동일한 취지.
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: ${SMTP_SECURE:true}
+
+server:
+  port: ${PORT:8080}
+  compression:
+    enabled: true
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    root: INFO
+    com.electerior.g2bmaster: ${LOG_LEVEL:INFO}
+
+# ── 애플리케이션 고유 설정 ────────────────────────────────────────────────
+g2b:
+  # 나라장터 OpenAPI
+  openapi:
+    service-key: ${G2B_SERVICE_KEY:}
+    base-url: ${G2B_BASE_URL:https://apis.data.go.kr/1230000}
+    timeout-ms: ${G2B_TIMEOUT_MS:20000}
+    max-retries: ${G2B_MAX_RETRIES:3}
+    page-size: ${G2B_PAGE_SIZE:100}
+
+  # 국방전자조달(D2B) OpenAPI
+  d2b:
+    service-key: ${D2B_SERVICE_KEY:}
+    base-url: ${D2B_BASE_URL:https://openapi.d2b.go.kr/openapi/service}
+    timeout-ms: ${D2B_TIMEOUT_MS:20000}
+
+  # AI 저장소(g2bmaster-AI)로 넘기는 호출. 이 백엔드는 추론을 직접 하지 않는다.
+  ai:
+    base-url: ${AI_BASE_URL:http://localhost:8000}
+    # AI 서비스의 자체 데드라인보다 커야 하고(LLM_TIMEOUT_SECONDS, 기본 100초),
+    # 분석 작업 리스(g2b.analysis.lease-ms)보다는 작아야 한다. 이 순서가 깨지면
+    # 백엔드가 먼저 포기한 작업을 다른 워커가 다시 집어 LLM 비용이 두 배로 난다.
+    timeout-ms: ${AI_TIMEOUT_MS:120000}
+    enabled: ${AI_ENABLED:true}
+    # AI 쪽 AI_SERVICE_SECRET 과 같은 값을 넣는다. 비워 두면 헤더를 붙이지 않는다
+    # (AI 쪽도 비어 있어야 통과한다 — 한쪽만 설정하면 전부 401 이다).
+    service-secret: ${AI_SERVICE_SECRET:}
+
+  # CORS — 프론트가 별도 오리진에서 뜨므로 명시적으로 허용해야 한다.
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+  # 앱 API 키. 비워두면 인증이 꺼진다(개발 모드) — AuthProperties 주석 참고.
+  auth:
+    app-api-key: ${APP_API_KEY:}
+
+  # 운영/디버그 엔드포인트 보호용 공유 비밀값
+  security:
+    debug-secret: ${DEBUG_SECRET:}
+    alert-secret: ${ALERT_SECRET:}
+
+  # 알림 메일
+  alert:
+    from: ${SMTP_FROM:}
+    to: ${ALERT_EMAIL:}
+    keywords: ${ALERT_KEYWORDS:}
+    public-base-url: ${PUBLIC_BASE_URL:}
+
+  # 동기화 스케줄러 — 기본은 꺼둔다(운영 인스턴스에서만 켠다).
+  sync:
+    enabled: ${SYNC_ENABLED:false}
+
+  # 공고 검색 색인 적재기 — 나라장터를 주기적으로 훑어 bid_notice 에 쌓는다.
+  # 검색(/api/search/notices)은 이 색인만 조회하므로, 여기가 꺼져 있으면 색인이 낡을 뿐
+  # 검색 자체는 계속 동작한다(그래서 기본값을 꺼 둘 수 있다).
+  # ⚠ 운영에서 이걸 켜는 인스턴스는 하나여야 한다 — 워터마크에 인스턴스 간 잠금이 없다.
+  index:
+    enabled: ${INDEX_SYNC_ENABLED:false}
+    interval-ms: ${INDEX_SYNC_INTERVAL_MS:600000}
+    sweep-ms: ${INDEX_SWEEP_INTERVAL_MS:300000}
+    backfill-days: ${INDEX_BACKFILL_DAYS:7}
+
+  # 분석 작업 큐. 큐 자체는 항상 살아 있고(등록·상태 조회는 언제나 동작한다),
+  # 실제로 추론을 태우는 워커만 이 스위치로 켠다. 기본은 꺼둔다.
+  # 여러 인스턴스에서 켜도 FOR UPDATE SKIP LOCKED 청구가 중복 실행을 막는다.
+  analysis:
+    runner-enabled: ${ANALYSIS_RUNNER_ENABLED:false}
+    concurrency: ${ANALYSIS_CONCURRENCY:1}
+    poll-ms: ${ANALYSIS_POLL_MS:500}
+    lease-ms: ${ANALYSIS_LEASE_MS:300000}
+    retry-base-ms: ${ANALYSIS_RETRY_BASE_MS:1000}
+    # 비워 두는 것이 정상이다 — 프롬프트 버전은 AI 서비스의 /api/ai/prompt-version 에서 읽는다.
+    # 여기에 값을 박으면 AI 쪽이 프롬프트를 고쳐도 백엔드가 낡은 결과를 계속 재사용한다.
+    prompt-version: ${ANALYSIS_PROMPT_VERSION:}

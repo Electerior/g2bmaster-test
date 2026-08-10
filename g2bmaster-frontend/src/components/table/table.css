@@ -1,0 +1,598 @@
+/*
+ * 결과 표 — 원본 style.css 의 #table-wrap / #result-table 블록.
+ * id 선택자를 클래스로 바꾼 것 말고는 규칙이 같다(표가 화면에 하나뿐이라는 전제가
+ * 라우터 도입으로 깨졌다 — 서랍 안에도 표가 생긴다).
+ */
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  /* 컬럼이 17개까지 늘어나는 레거시 4탭 기준 하한. 좁히면 글자가 세로로 접힌다. */
+  min-width: var(--table-min-width);
+  border-collapse: collapse;
+  font-size: var(--fs-table);
+}
+/*
+ * 공고 통합 검색 표는 컬럼을 9개로 줄였다(SVG 목업). 레거시 하한(1580px)을 그대로 쓰면
+ * 패널보다 넓어 가로 스크롤이 늘 생긴다 — 이 표는 패널 폭에 맞춰 접히지 않을 만큼만 넓힌다.
+ */
+.data-table:has(.col-noticeName) {
+  min-width: 940px;
+}
+
+.data-table th {
+  background: var(--table-head-bg);
+  padding: 11px 12px;
+  text-align: left;
+  font-weight: 700;
+  color: var(--primary);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+  /* 헤더 고정 — 긴 목록을 훑을 때 어느 컬럼인지 잃지 않는다. 패널 안 스크롤 기준. */
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  /* 스크롤로 본문이 헤더 밑을 지날 때 경계가 뜨도록 옅은 그림자. */
+  box-shadow: 0 1px 0 var(--border);
+}
+
+.th-sortable {
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+  white-space: nowrap;
+}
+.data-table th:has(.th-sortable):hover {
+  background: var(--table-head-hover);
+}
+.sort-icon {
+  margin-left: 4px;
+  font-size: var(--fs-badge);
+  color: #b0b8cc;
+}
+.sort-icon.active {
+  color: var(--primary);
+  font-size: var(--fs-badge-sm);
+}
+
+/*
+ * 단계·구분 필터 전환 — 결과가 갈릴 때 tbody 가 부드럽게 나타난다(툭 바뀌지 않게).
+ * transform 은 <tbody>(table-row-group)에서 브라우저별로 불안정해 opacity 만 쓴다.
+ */
+.table-body-fade {
+  animation: table-body-fade-in 0.3s ease-out both;
+}
+@keyframes table-body-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .table-body-fade {
+    animation: none;
+  }
+}
+
+.data-table td {
+  padding: 11px 10px;
+  border-bottom: 1px solid var(--table-row-line);
+  vertical-align: top;
+  line-height: 1.5;
+}
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+/* 얼룩무늬(zebra) — 행이 많을 때 시선이 옆으로 흐르지 않게 한 줄씩 옅게 깐다. */
+.data-table tbody tr:nth-child(even) td {
+  background: var(--table-row-alt);
+}
+/* hover 는 zebra 위에서도 확실히 뜨도록 왼쪽에 파란 레일 + 배경 강조. */
+.data-table tbody tr:hover td {
+  background: var(--table-row-hover);
+}
+.data-table tbody tr:hover td:first-child {
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+.data-table a {
+  color: var(--primary);
+  text-decoration: none;
+}
+.data-table a:hover {
+  text-decoration: underline;
+}
+
+/* 컬럼 폭 — 원본 #result-table .col-* 그대로. 키 이름이 곧 클래스다. */
+.col-bidNtceNm {
+  min-width: 480px;
+  width: 38%;
+}
+.col-_requirementSummary,
+.col-_contractSummary {
+  min-width: 110px;
+  width: 9%;
+}
+.col-bidNtceNo {
+  min-width: 108px;
+  width: 8%;
+}
+.col-_opportunitySummary {
+  min-width: 112px;
+  width: 8%;
+}
+.col-_sourceLabel,
+.col-_noticeStatus {
+  min-width: 78px;
+  width: 5%;
+}
+.col-ntceInsttNm,
+.col-dminsttNm {
+  min-width: 108px;
+  width: 8%;
+}
+.col-presmptPrce,
+.col-bidNtceDt,
+.col-bidClseDt {
+  min-width: 88px;
+}
+.col-prdctClsfcNo {
+  min-width: 96px;
+  white-space: nowrap;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.col-bidNtceNm .bid-link {
+  display: inline;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-height: 1.55;
+}
+
+/* 공고명 클릭 링크 — 원본 .bid-link */
+.bid-link {
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px dashed var(--primary);
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+}
+.bid-link:hover {
+  border-bottom-style: solid;
+}
+
+/* ── 공고 통합 검색(로컬 색인) 표 ──────────────────────────────────────── */
+.col-noticeName {
+  min-width: 420px;
+  width: 32%;
+}
+.col-noticeInstitutionName {
+  min-width: 140px;
+  width: 10%;
+}
+.col-id,
+.col-beforeSpecRgstNo {
+  min-width: 104px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.col-createdDate,
+.col-closeDate,
+.col-updatedAt {
+  min-width: 92px;
+}
+/* 추정가격은 자릿수 비교가 목적이라 오른쪽 정렬 + 고정폭 숫자. */
+.col-estimatedPrice {
+  min-width: 110px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.data-table th.col-estimatedPrice .th-sortable {
+  text-align: right;
+  width: 100%;
+  justify-content: flex-end;
+  display: inline-flex;
+}
+.col-region,
+.col-category,
+.col-state,
+.col-businessDivision {
+  min-width: 68px;
+}
+.col-_opportunityPending {
+  min-width: 78px;
+}
+
+/* 조달 생애주기 단계 배지 — 계획 → 사전규격 → 입찰 → 마감 */
+.stage-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stage-plan {
+  background: var(--type-goods-bg);
+  color: var(--type-goods-fg);
+}
+.stage-spec {
+  background: var(--type-service-bg);
+  color: var(--type-service-fg);
+}
+.stage-open {
+  background: var(--type-works-bg);
+  color: var(--type-works-fg);
+}
+.stage-closed {
+  background: var(--type-etc-bg);
+  color: var(--type-etc-fg);
+}
+
+/* 지역 제한이 없는 공고. '전국'이라고 적지 않으면 필터 오작동으로 읽힌다. */
+.region-any {
+  color: var(--muted);
+}
+
+.instt-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+/* 수요기관은 공고기관과 다를 때만 붙는다(조달청 대행 공고). */
+.instt-pair em {
+  font-style: normal;
+  font-size: var(--fs-badge);
+  color: var(--muted);
+}
+
+.notice-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+/* 공고명은 이 표에서 가장 먼저 읽히는 값 — 약간 굵게 해서 스캔의 닻으로 삼는다. */
+.notice-name-cell .bid-link {
+  font-weight: 600;
+  border-bottom-color: transparent;
+}
+.notice-name-cell .bid-link:hover {
+  border-bottom-color: var(--primary);
+}
+/* 공고번호 — 공고명 아래 옅은 한 줄(별도 컬럼 대신). */
+.notice-no {
+  font-size: var(--fs-badge);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+/* 마감일시 + D-DAY 한 칸. 배지는 날짜 아래 작게. */
+.close-dday-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+}
+.dday-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  font-size: var(--fs-badge-sm);
+  font-weight: 700;
+  line-height: 1.4;
+}
+.dday-badge.dday-expired {
+  color: var(--muted);
+  border-color: var(--border);
+}
+.body-preview {
+  margin: 0;
+  font-size: var(--fs-badge);
+  color: var(--muted);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 수주기회 점수는 백엔드 작업 중 — 칸은 남기고 누르면 알린다. */
+.opp-pending {
+  padding: 2px 8px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: none;
+  color: var(--muted);
+  font-size: var(--fs-badge);
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+/*
+ * 취소 공고는 검색 결과에서 지우지 않는다 — 발주가 접혔다는 사실 자체가 정보다.
+ * 대신 눈에 띄게 표시한다.
+ */
+.cancelled-row td {
+  background: var(--status-cancelled-bg);
+}
+.cancelled-row td:first-child {
+  box-shadow: inset 3px 0 0 var(--status-cancelled-border);
+}
+.cancelled-row .bid-link {
+  text-decoration: line-through;
+}
+
+.attachment-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: var(--fs-table);
+  line-height: 1.8;
+}
+/* 색인 본문은 줄바꿈이 의미를 갖는 이어붙인 텍스트다 — 그대로 접어서 보여준다. */
+.notice-body {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  font-size: var(--fs-table);
+  line-height: 1.7;
+}
+
+/* 다른 탭으로 질의를 넘기는 버튼 — 원본 .cross-tab-btn 의 인라인 스타일 */
+.cross-tab-btn {
+  font-size: var(--fs-badge);
+  padding: 2px 7px;
+  cursor: pointer;
+  background: var(--blue-soft);
+  border: 1px solid var(--blue-line);
+  border-radius: 4px;
+  white-space: nowrap;
+  color: var(--primary);
+}
+.cross-tab-btn.plain {
+  background: var(--opp-bg);
+  border-color: var(--status-completed-border);
+  color: inherit;
+}
+
+/* ── 첨부 전수조사 결과 하위 행 ────────────────────────────────────────── */
+tr.file-match-row td {
+  border-left: 3px solid var(--file-match-rail);
+}
+.file-excerpt-row td {
+  background: var(--file-excerpt-bg);
+  border-top: none;
+  border-left: 3px solid var(--file-match-rail);
+  padding: 4px 12px 8px 28px;
+  font-size: var(--fs-meta);
+  color: var(--file-excerpt-fg);
+  line-height: 1.6;
+  white-space: normal;
+}
+mark.file-kw-mark {
+  background: var(--file-mark-bg);
+  color: var(--file-mark-fg);
+  border-radius: 3px;
+  padding: 0 3px;
+  font-weight: 700;
+}
+
+/* ── 입찰 불가 조항 '?' 표식 ───────────────────────────────────────────── */
+tr.blocking-row > td {
+  background: var(--blocking-row-bg);
+}
+details.blocking-info {
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+details.blocking-info > summary {
+  list-style: none;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--blocking-dot-bg);
+  color: #fff;
+  font-size: var(--fs-badge);
+  font-weight: 700;
+  line-height: 1;
+}
+details.blocking-info > summary::-webkit-details-marker {
+  display: none;
+}
+details.blocking-info[open] > summary {
+  background: var(--blocking-dot-open);
+}
+.blocking-pop {
+  position: absolute;
+  z-index: 40;
+  top: 20px;
+  left: 0;
+  width: 320px;
+  max-width: 80vw;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--blocking-pop-border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  font-size: var(--fs-meta);
+  color: var(--blocking-pop-fg);
+  text-align: left;
+  white-space: normal;
+  font-weight: 400;
+}
+.blocking-pop strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--blocking-dot-bg);
+}
+.blocking-pop ul {
+  margin: 0 0 6px;
+  padding-left: 16px;
+}
+.blocking-excerpt {
+  margin: 6px 0;
+  padding: 6px 8px;
+  background: var(--blocking-excerpt-bg);
+  border-left: 3px solid var(--blocking-pop-border);
+  color: var(--blocking-excerpt-fg);
+}
+.blocking-note {
+  display: block;
+  margin-top: 4px;
+  color: var(--blocking-note-fg);
+  font-size: var(--fs-badge);
+}
+
+/* ── 로딩 스켈레톤 ─────────────────────────────────────────────────────── */
+/*
+ * 셀 전체를 칠하지 않고 콘텐츠 자리에 옅은 막대 하나만 둔다. 예전엔 td 배경을 통째로
+ * 애니메이션해 표가 "고장난 격자"처럼 보였다 — 특히 빈 칸이 많은 계획 단계에서.
+ */
+.loading-row td {
+  height: 44px;
+}
+.skeleton-bar {
+  display: block;
+  height: 12px;
+  width: 72%;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-a) 25%,
+    var(--skeleton-b) 50%,
+    var(--skeleton-a) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+}
+/* 컬럼마다 콘텐츠 폭이 달라 막대 길이를 흩뜨린다 — 균일한 막대는 오히려 인공적으로 보인다. */
+.loading-row td.col-noticeName .skeleton-bar {
+  width: 88%;
+}
+.loading-row td.col-category .skeleton-bar,
+.loading-row td.col-businessDivision .skeleton-bar,
+.loading-row td.col-region .skeleton-bar {
+  width: 40%;
+}
+.loading-row td.col-estimatedPrice .skeleton-bar {
+  width: 60%;
+  margin-left: auto;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-bar {
+    animation: none;
+  }
+}
+
+/* ── 페이지네이션 ──────────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.pagination button {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+  font-size: var(--fs-table);
+  color: var(--text);
+  transition: all 0.15s;
+}
+.pagination button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.pagination button.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 700;
+}
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.per-page-select {
+  margin-left: 12px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: var(--fs-table);
+  cursor: pointer;
+}
+
+/* ── 상태 줄 부가 ──────────────────────────────────────────────────────── */
+.coverage-note {
+  color: var(--coverage-note-fg);
+  font-size: var(--fs-badge);
+}
+.status-sep {
+  padding: 0 6px;
+}
+
+@media (max-width: 760px) {
+  .data-table {
+    min-width: 720px;
+    font-size: var(--fs-meta);
+  }
+  .data-table th,
+  .data-table td {
+    padding: 8px 7px;
+  }
+  .col-bidNtceNm,
+  .col-bizNm {
+    min-width: 280px;
+    width: 38%;
+  }
+  .col-orderInsttNm,
+  .col-ntceInsttNm,
+  .col-dminsttNm {
+    min-width: 160px;
+  }
+  .col-prdctClsfcNoNm {
+    min-width: 96px;
+  }
+  .col-prdctClsfcNo {
+    min-width: 92px;
+  }
+}
