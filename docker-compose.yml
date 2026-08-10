@@ -1,0 +1,46 @@
+# g2bmaster 개발용 MySQL.
+#
+# 이 저장소 어디에도 속하지 않는 오케스트레이션 파일이라 세 저장소 밖(dev 루트)에 둔다.
+# start_all.sh 가 기동 전에 이 컨테이너를 자동으로 확인·기동한다 — 직접 다룰 일은 거의 없다.
+#
+#   직접 다룰 때:
+#     docker compose up -d db        # 띄우기
+#     docker compose down            # 내리기 (데이터는 볼륨에 남는다)
+#     docker compose down -v         # 데이터까지 지우기 (Flyway 가 처음부터 다시 만든다)
+#
+# 왜 시스템 MySQL 을 안 쓰나: 이 환경의 시스템 MySQL(3306)은 g2b 계정 비밀번호를 몰라
+# 붙을 수 없었고, sudo 로 재설정할 권한도 없었다. 그래서 우리가 통제하는 인스턴스를
+# 3307 에 따로 띄운다 — 시스템 MySQL 은 건드리지 않는다.
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: g2b-mysql
+    restart: unless-stopped
+    # 백엔드의 application.yml 기본값과 같은 자격증명이다. 한쪽만 바꾸면 붙지 못한다.
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-g2b}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-g2b}
+      MYSQL_USER: ${MYSQL_USER:-g2b}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-g2b}
+    # 시스템 MySQL 이 3306 을 쓰므로 호스트 쪽은 3307 로 뺀다. 컨테이너 안은 3306 그대로.
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"
+    # 스키마 대조가 걸렸던 그 collation 으로 고정한다(porting-status.md).
+    # 서버 기본값이 다르면 Flyway 로 만든 표와 런타임 대조에서 미묘하게 어긋난다.
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    # 데이터는 이름 있는 볼륨에 남는다 — 컨테이너를 지워도 적재해 둔 공고가 살아남는다.
+    volumes:
+      - g2b-mysql-data:/var/lib/mysql
+    # start_all.sh 가 이 헬스체크를 기다렸다가 백엔드를 띄운다.
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-g2b}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+
+volumes:
+  g2b-mysql-data:
