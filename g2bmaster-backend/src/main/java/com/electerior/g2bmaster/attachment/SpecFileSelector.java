@@ -262,6 +262,35 @@ public final class SpecFileSelector {
 		return sum / sections;
 	}
 
+	/**
+	 * 후보를 선택 순서대로 정렬한다 — 밀도 바닥선 통과분이 앞, 미통과분이 뒤,
+	 * 각 구간 안에서는 {@link #hybridScore} 내림차순.
+	 *
+	 * <p>{@link #chooseSpecHybrid} 가 쓰는 바로 그 순서다. 검증 층
+	 * ({@link SpecDocumentValidator})이 최고점 하나만 보지 않고 <b>걸어 내려가며</b>
+	 * 쓸 만한 문서를 찾을 수 있도록 노출한다 — 최고점이 공고문이어도 세 번째 후보가
+	 * 진짜 규격서일 수 있다.
+	 */
+	public static List<Candidate> rankHybrid(List<Candidate> candidates) {
+		if (candidates == null || candidates.isEmpty()) {
+			return List.of();
+		}
+		Map<Candidate, Integer> hybrid = new IdentityHashMap<>();
+		List<Candidate> passing = new ArrayList<>();
+		List<Candidate> failing = new ArrayList<>();
+		for (Candidate c : candidates) {
+			hybrid.put(c, hybridScore(c));
+			(passesDensityFloor(density(c.markdown())) ? passing : failing).add(c);
+		}
+		Comparator<Candidate> byHybrid = Comparator.comparingInt((Candidate c) -> hybrid.get(c)).reversed();
+		passing.sort(byHybrid);
+		failing.sort(byHybrid);
+		// 밀도 통과분을 먼저, 미통과분을 뒤로 — 미통과분도 fallback 으로 남긴다.
+		List<Candidate> ranked = new ArrayList<>(passing);
+		ranked.addAll(failing);
+		return ranked;
+	}
+
 	/** 내용 점수 + 부품명 유사도 보너스. 규격서 확신을 하나의 정수로 합친다. */
 	public static int hybridScore(Candidate candidate) {
 		if (candidate == null) {
@@ -280,19 +309,11 @@ public final class SpecFileSelector {
 		if (candidates == null || candidates.isEmpty()) {
 			return new Choice(null, "none");
 		}
+		List<Candidate> ranked = rankHybrid(candidates);
 		Map<Candidate, Integer> hybrid = new IdentityHashMap<>();
-		List<Candidate> passing = new ArrayList<>();
-		List<Candidate> failing = new ArrayList<>();
-		for (Candidate c : candidates) {
+		for (Candidate c : ranked) {
 			hybrid.put(c, hybridScore(c));
-			(passesDensityFloor(density(c.markdown())) ? passing : failing).add(c);
 		}
-		Comparator<Candidate> byHybrid = Comparator.comparingInt((Candidate c) -> hybrid.get(c)).reversed();
-		passing.sort(byHybrid);
-		failing.sort(byHybrid);
-		// 밀도 통과분을 먼저, 미통과분을 뒤로 — 미통과분도 fallback 으로 남긴다.
-		List<Candidate> ranked = new ArrayList<>(passing);
-		ranked.addAll(failing);
 
 		Candidate top = ranked.getFirst();
 		if (hybrid.get(top) < minScore) {

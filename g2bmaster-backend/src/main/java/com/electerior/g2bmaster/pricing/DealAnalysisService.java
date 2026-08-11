@@ -77,7 +77,11 @@ public class DealAnalysisService {
 
 		// ── deal — 이 시세에서 이 원가로 남는가 ─────────────────────────────
 		// 부품 추정으로 단가가 나왔으면 그것을 우선(source=estimated), 사용자 입력이면 user.
-		BigDecimal estimatedUnit = estimatedUnitCostMid(estimatedUnitCost);
+		// 단, 추정 단가는 규격서 원문 대조를 통과해야 쓴다 — 근거 없는 부품으로 선 단가는
+		// 화면에서 정상적인 숫자로 보이고 그대로 손익·마진이 된다.
+		UnitCostValidator.Verdict costVerdict =
+				UnitCostValidator.validate(estimatedUnitCost, spec == null ? null : spec.text());
+		BigDecimal estimatedUnit = costVerdict.confirmedMid();
 		BigDecimal effectiveUnit = coalesce(unitCost, estimatedUnit);
 		String unitCostSource = unitCost != null ? "user" : (estimatedUnit != null ? "estimated" : null);
 		Object expectedAward = market != null ? market.expectedAward() : null;
@@ -95,26 +99,48 @@ public class DealAnalysisService {
 		out.put("deal", dealMap(deal, unitCostSource));
 		out.put("simBidUsed", null);
 		out.put("spec", specMap(spec, specFiles));
-		out.put("estimatedUnitCost", estimatedUnitCost);   // AI 부품 추정 결과(없으면 null)
+		out.put("estimatedUnitCost", annotate(estimatedUnitCost, costVerdict));
 		out.put("d2bGw", null);
 
 		// 단가원이 하나도 없으면(사용자 입력도, 부품 추정도) 그 사실을 알린다 — 조용한 null 은
 		// "분석 실패"로 오해된다.
 		if (effectiveUnit == null) {
-			out.put("note", opt.deep()
-					? "규격서에서 부품 단가를 추정하지 못했습니다. 단가를 직접 입력하면 원가·손익이 계산됩니다."
-					: "빠른 분석(deep=off)입니다 — 시가·예산 기반 딜 계산만 제공합니다. "
-							+ "규격서 부품 단가는 deep 를 켜거나 단가를 직접 입력하세요.");
+			boolean rejected = costVerdict.indicativeMid() != null;
+			out.put("note", !opt.deep()
+					? "빠른 분석(deep=off)입니다 — 시가·예산 기반 딜 계산만 제공합니다. "
+							+ "규격서 부품 단가는 deep 를 켜거나 단가를 직접 입력하세요."
+					: rejected
+							// 추정은 나왔지만 규격서와 대조해 채택하지 않았다. "못 찾았다"와 다른 사실이므로
+							// 다르게 알린다 — 같은 문구를 쓰면 왜 숫자가 없는지 알 수 없다.
+							? "추정된 부품이 규격서 내용과 일치하지 않아 단가를 확정하지 않았습니다. "
+									+ "아래 부품 목록은 참고용이며, 단가를 직접 입력하면 원가·손익이 계산됩니다."
+							: "규격서에서 부품 단가를 추정하지 못했습니다. 단가를 직접 입력하면 원가·손익이 계산됩니다.");
 		}
 		return out;
 	}
 
-	/** estimatedUnitCost(matched:true) 에서 mid 단가를 꺼낸다. 없으면 null. */
-	private static BigDecimal estimatedUnitCostMid(Map<String, Object> estimated) {
-		if (estimated == null || !Boolean.TRUE.equals(estimated.get("matched"))) {
+	/**
+	 * AI 의 추정 봉투에 <b>백엔드 검증 결과를 덧붙여</b> 돌려준다. 원본 필드는 지우지 않는다 —
+	 * 화면이 "AI 는 이렇게 봤고 우리는 이만큼만 인정했다"를 함께 보여줄 수 있어야 한다.
+	 *
+	 * <p>덧붙는 것: {@code costConfidence}(confirmed|partial|untrusted) · {@code confirmedMid} ·
+	 * {@code evidenceRatio} · {@code costWarnings[]}, 그리고 {@code breakdown} 각 행의
+	 * {@code evidenceInSpec}·{@code acceptedForCost}·{@code rejectReason}.
+	 */
+	private static Map<String, Object> annotate(Map<String, Object> estimated,
+			UnitCostValidator.Verdict verdict) {
+		if (estimated == null) {
 			return null;
 		}
-		return Numbers.toNumber(estimated.get("mid"));
+		Map<String, Object> out = new LinkedHashMap<>(estimated);
+		out.put("costConfidence", verdict.confidence().name().toLowerCase(java.util.Locale.ROOT));
+		out.put("confirmedMid", verdict.confirmedMid());
+		out.put("evidenceRatio", Math.round(verdict.evidenceRatio() * 100) / 100.0);
+		out.put("costWarnings", verdict.warnings());
+		if (!verdict.rows().isEmpty()) {
+			out.put("breakdown", verdict.rows());
+		}
+		return out;
 	}
 
 	// ── 응답 매핑 (필드명은 프론트 계약) ─────────────────────────────────────
@@ -194,6 +220,91 @@ public class DealAnalysisService {
 
 	private static BigDecimal coalesce(BigDecimal a, BigDecimal b) {
 		return a != null ? a : b;
+	}
+
+	/**
+	 * 낙찰결과를 훑을 <b>검색어 한 낱말</b>을 고른다.
+	 *
+	 * <p>공고명 전체를 검색어로 쓰면 거의 언제나 0건이다. 실측:
+	 * {@code "2026년 충남 청년 Job Planning Day 운영 용역"} → 0건,
+	 * {@code "서버"} → 2건. 공고명은 사업명이지 품목명이 아니다.
+	 *
+	 * <p>품목분류명이 있으면 그것이 곧 품목명이므로 그대로 쓴다. 없으면 공고명에서 캐낸다 —
+	 * 국내 공고명은 <b>{@code <연도><기관·사업명> … <품목> <구매/구입>}</b> 꼴이라 품목이
+	 * 조달 관용어 바로 앞에 온다. 그래서 잡음을 걷어낸 뒤 <b>마지막</b> 남은 낱말을 고른다.
+	 */
+	public static String awardKeyword(String productClassName, String noticeName) {
+		String direct = productClassName == null ? "" : productClassName.trim();
+		if (!direct.isBlank()) {
+			// 품목분류명은 이미 품목명이다("컴퓨터서버"). 첫 낱말만 떼어 넓게 훑는다.
+			String[] parts = direct.split("[\\s,/·]+");
+			for (String p : parts) {
+				String token = clean(p);
+				if (!token.isBlank() && !NOISE.contains(token)) {
+					return token;
+				}
+			}
+		}
+		String title = noticeName == null ? "" : noticeName;
+		// 괄호는 내용을 살리고 기호만 지운다 — "(컴퓨터서버 2점, 공과대학)" 안에 품목이 있다.
+		String flattened = title.replaceAll("[\\[\\]()<>{}“”\"'·,/]", " ");
+		String picked = "";
+		for (String raw : flattened.split("\\s+")) {
+			String token = clean(raw);
+			if (token.length() < 2 || NOISE.contains(token)
+					|| NUMERIC.matcher(token).matches() || isInstitution(token)) {
+				continue;
+			}
+			picked = token;   // 마지막까지 덮어써 "구매" 직전 낱말이 남는다
+		}
+		return picked;
+	}
+
+	/** 품목이 아닌 낱말 — 조달 관용어·계약방식·수량 단위·접속사. 검색어가 되면 표본이 오염된다. */
+	private static final java.util.Set<String> NOISE = java.util.Set.of(
+			"구매", "구입", "납품", "설치", "임차", "임대", "제작", "교체", "신규", "증설",
+			"유지보수", "유지관리", "용역", "공사", "사업", "사업자", "선정", "계약", "공고",
+			"재공고", "입찰", "견적", "운영", "운용", "지원", "관리", "구축", "도입", "외",
+			"종", "건", "식", "대", "점", "세트", "개", "및", "등", "위한", "관련", "일괄",
+			"단가", "수의", "긴급", "년도", "학년도",
+			// 계약 방식·범위 수식어. 품목처럼 보이지만 무엇을 사는지 말하지 않는다.
+			"학교주관", "공동", "통합", "일반", "제한", "지명", "협상", "총액", "분할",
+			"신입생", "재학생", "기존", "추가", "일부", "전체");
+
+	/**
+	 * 기관명 접미. 이것으로 끝나는 낱말은 품목이 아니라 발주처다 —
+	 * {@code "…(컴퓨터서버 2점, 공과대학) 교체 구매"} 에서 {@code 공과대학} 이 잡히던 것을 막는다.
+	 */
+	private static final String[] INSTITUTION_SUFFIX = {
+			"대학교", "대학", "학교", "중학교", "고등학교", "초등학교", "연구원", "연구소",
+			"공단", "시청", "군청", "도청", "병원", "진흥원", "센터", "본부", "사업단",
+			"재단", "공제회", "청", "군", "시", "도"};
+
+	/**
+	 * 숫자로 시작하고 짧은 꼬리만 붙은 낱말 — {@code 2026년}·{@code 50대}·{@code 2점}·
+	 * {@code 2027학년도}. 꼬리를 3자로 제한해 {@code 3D프린터} 같은 실제 품목은 살린다.
+	 */
+	private static final java.util.regex.Pattern NUMERIC =
+			java.util.regex.Pattern.compile("\\d+[가-힣A-Za-z]{0,3}");
+
+	private static boolean isInstitution(String token) {
+		for (String suffix : INSTITUTION_SUFFIX) {
+			if (token.length() > suffix.length() && token.endsWith(suffix)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** 낱말 끝의 조사·꼬리를 떼어 검색어를 넓힌다("서버용" → "서버"). */
+	private static String clean(String raw) {
+		String token = raw == null ? "" : raw.trim();
+		for (String tail : new String[] {"용의", "용", "등의", "의", "를", "을", "은", "는", "이", "가"}) {
+			if (token.length() > tail.length() + 1 && token.endsWith(tail)) {
+				return token.substring(0, token.length() - tail.length());
+			}
+		}
+		return token;
 	}
 
 	/** 나라장터 낙찰결과 항목(Map)을 {@link MarketPriceService.Award} 로 옮긴다. */

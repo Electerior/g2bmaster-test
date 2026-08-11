@@ -3,6 +3,7 @@ package com.electerior.g2bmaster.market;
 import com.electerior.g2bmaster.attachment.AttachmentFetcher;
 import com.electerior.g2bmaster.attachment.DocumentTextExtractor;
 import com.electerior.g2bmaster.attachment.ParsedDocument;
+import com.electerior.g2bmaster.attachment.SpecDocumentValidator;
 import com.electerior.g2bmaster.attachment.SpecFileSelector;
 import com.electerior.g2bmaster.common.ApiException;
 import com.electerior.g2bmaster.config.OpenApiConfig;
@@ -148,6 +149,9 @@ public class MarketIntelController {
 		boolean wantSpec = deep && flag(include, "spec", true);
 		boolean wantParts = deep && flag(include, "parts", true);
 		boolean forceRefresh = Boolean.TRUE.equals(req.get("forceRefresh")) || "true".equals(req.get("forceRefresh"));
+		// 사용자가 첨부 중 하나를 규격서로 지목했으면 자동 선택을 건너뛴다. 자동 선택은
+		// 휴리스틱이고 사람은 공고를 읽었다 — 사람이 고른 것이 이긴다.
+		String specFileUrl = String.valueOf(req.getOrDefault("specFileUrl", "")).trim();
 
 		DealAnalysisService.Options options = new DealAnalysisService.Options(
 				req.get("bidPrice"), req.get("unitCost"), req.get("quantity"),
@@ -182,12 +186,13 @@ public class MarketIntelController {
 
 		// 규격서: deep + include.spec 일 때만 첨부를 내려받아 파싱한다.
 		List<Map<String, String>> specFiles = new ArrayList<>();
-		ParsedDocument spec = wantSpec ? parseSpecAttachment(item, specFiles) : null;
+		SpecSelection selected = wantSpec ? parseSpecAttachment(item, specFiles, specFileUrl) : null;
+		ParsedDocument spec = selected == null ? null : selected.doc();
 
 		// 부품 단가 추정: deep + include.parts 면 시도한다. 규격서 첨부가 있으면 그 텍스트를,
 		// 없어도 공고명·품목명으로 추정한다(원본 server.js:2793 과 같다 — GPU 서버는 공고명만으로도
 		// ITMAYA 색인에 걸린다). 실패는 삼키고 null — 딜 계산 자체는 막지 않는다.
-		Map<String, Object> estimatedUnitCost = wantParts ? estimateUnitCost(spec, item) : null;
+		Map<String, Object> estimatedUnitCost = wantParts ? estimateUnitCost(selected, item) : null;
 
 		Map<String, Object> result = dealAnalysis.analyze(item, options, awards, spec, specFiles, estimatedUnitCost);
 
@@ -282,14 +287,20 @@ public class MarketIntelController {
 	}
 
 	/**
-	 * AI 로 규격서 부품 단가를 추정한다. 규격서 첨부 텍스트가 있으면 그것을, 없어도 공고명·품목명을
-	 * 함께 넘긴다 — GPU 서버는 공고명만으로도 ITMAYA 색인에 걸린다(원본 estimateText 조합과 같다).
-	 * AI 가 없거나 실패하면 null — 딜 계산은 계속된다.
+	 * AI 로 규격서 부품 단가를 추정한다. <b>{@link SpecDocumentValidator} 를 통과한</b> 규격서
+	 * 텍스트가 있으면 그것을, 없어도 공고명·품목명을 함께 넘긴다 — GPU 서버는 공고명만으로도
+	 * ITMAYA 색인에 걸린다(원본 estimateText 조합과 같다). AI 가 없거나 실패하면 null —
+	 * 딜 계산은 계속된다.
+	 *
+	 * <p>검증에 걸린 문서는 <b>본문을 빼고</b> 공고 메타만 남긴다. 여기서 막지 않으면 엉뚱한
+	 * 문서에서 뽑은 부품이 그대로 단가가 되고, 화면에는 정상적인 숫자로 보인다.
 	 */
-	private Map<String, Object> estimateUnitCost(ParsedDocument spec, Map<String, Object> item) {
+	private Map<String, Object> estimateUnitCost(SpecSelection selected, Map<String, Object> item) {
 		StringBuilder text = new StringBuilder();
-		if (spec != null && !spec.isEmpty()) {
-			text.append(spec.text()).append('\n');
+		// 규격서로 확인됐거나(ACCEPT), 확인은 안 됐지만 규격을 품고 있을 수 있는(FALLBACK) 문서만
+		// 본문을 넘긴다. 계약조건·서약서 같이 구조적으로 부품이 없는 문서는 여기까지 오지 않는다.
+		if (selected != null && selected.usableForAi()) {
+			text.append(selected.doc().text()).append('\n');
 		}
 		// 공고 메타 — 규격서가 없거나 부족할 때 GPU 서버 신호(H200·ESC8000 등)가 여기 있을 수 있다.
 		for (String key : new String[] {"bidNtceNm", "prdctClsfcNoNm", "dtilPrdctClsfcNoNm", "prdctList"}) {
@@ -307,6 +318,15 @@ public class MarketIntelController {
 			payload.put("specText", specText);
 			payload.put("itemName", String.valueOf(item.getOrDefault("bidNtceNm", "")));
 			payload.put("deadlineMs", 30000);
+			// 문서종·신뢰 여부는 AI 가 아직 읽지 않는다. 문서종별 프롬프트·스키마 분기(STRATEGY)를
+			// 붙일 때 쓰려고 지금부터 실어 보낸다 — 나중에 넣으면 재사용 캐시 키가 통째로 갈린다.
+			// specTrusted=false 는 "규격서인지 확인 못 했으니 부품이 없으면 없다고 답하라"는 뜻이다.
+			if (selected != null && selected.usableForAi()) {
+				payload.put("specTrusted", selected.trusted());
+				if (selected.documentClass() != null) {
+					payload.put("documentClass", selected.documentClass());
+				}
+			}
 			return aiClient.estimateUnitCost(payload);
 		}
 		catch (AiUnavailableException e) {
@@ -389,8 +409,39 @@ public class MarketIntelController {
 		}
 	}
 
+	/**
+	 * 고른 규격서와 그 검증 결과.
+	 *
+	 * <p>거부돼도 {@code doc} 은 그대로 들고 있다 — 응답에는 남겨 사용자가 어떤 문서가 뽑혔는지
+	 * 볼 수 있게 하고, <b>AI 인계만</b> 막는다.
+	 */
+	private record SpecSelection(ParsedDocument doc, SpecDocumentValidator.Verdict verdict) {
+
+		/** 본문을 AI 로 넘길 수 있는가 — 규격서로 확인됐거나(ACCEPT) 규격을 품을 수 있는(FALLBACK) 문서. */
+		boolean usableForAi() {
+			return verdict.usable() && doc != null && !doc.isEmpty();
+		}
+
+		/** 규격서로 <b>확인</b>됐는가. {@code false} 면 판단을 LLM 에 맡긴 것이다. */
+		boolean trusted() {
+			return verdict.accepted();
+		}
+
+		String documentClass() {
+			return verdict.documentClass();
+		}
+	}
+
 	/** 내려받아 채점할 첨부 상한. deep 분석의 느린 경로라 넉넉히 두되, 30개 첨부를 다 긁진 않는다. */
 	private static final int MAX_SPEC_DOWNLOADS = 6;
+
+	/**
+	 * 후보 하나의 선택 확신 등급. {@code llmSaysSpec} 없이 부를 때의
+	 * {@link SpecFileSelector#chooseSpecHybrid} 판정과 같은 기준이다.
+	 */
+	private static String confidenceOf(SpecFileSelector.Candidate candidate) {
+		return SpecFileSelector.hybridScore(candidate) >= SPEC_MIN_SCORE ? "heuristic" : "estimated";
+	}
 	/** 이 점수 미만이면 규격서라고 확신하지 못한다({@code confidence=estimated}). */
 	private static final int SPEC_MIN_SCORE = 20;
 
@@ -402,7 +453,8 @@ public class MarketIntelController {
 	 * 최고점을 고른다 — 파일명은 힌트, 내용이 판정이다. zip 은 풀어 안의 문서까지 후보에 넣는다.
 	 */
 	@SuppressWarnings("unchecked")
-	private ParsedDocument parseSpecAttachment(Map<String, Object> item, List<Map<String, String>> specFiles) {
+	private SpecSelection parseSpecAttachment(Map<String, Object> item,
+			List<Map<String, String>> specFiles, String specFileUrl) {
 		Object attachments = item.get("attachmentUrls");
 		if (!(attachments instanceof List<?> list) || list.isEmpty()) {
 			return null;
@@ -412,6 +464,21 @@ public class MarketIntelController {
 		for (Object entry : list) {
 			if (entry instanceof Map<?, ?> map) {
 				candidates.add((Map<String, Object>) map);
+			}
+		}
+		// 사용자가 지목한 파일이 있으면 후보를 그것 하나로 좁힌다. 지목한 URL 이 첨부 목록에
+		// 없으면 무시하고 자동 선택으로 돌아간다 — 임의 URL 을 받아 내려받지 않는다(SSRF).
+		boolean userPicked = false;
+		if (specFileUrl != null && !specFileUrl.isBlank()) {
+			List<Map<String, Object>> picked = candidates.stream()
+					.filter(c -> specFileUrl.equals(str(c.get("url"))))
+					.toList();
+			if (picked.isEmpty()) {
+				log.info("지목한 규격서가 첨부 목록에 없다 — 자동 선택으로 진행한다: {}", specFileUrl);
+			}
+			else {
+				candidates = new ArrayList<>(picked);
+				userPicked = true;
 			}
 		}
 		// 랭크는 낮을수록 규격서다움 — 오름차순으로 정렬해 유력한 것부터 내려받는다.
@@ -455,30 +522,55 @@ public class MarketIntelController {
 			return null;
 		}
 
-		// 하이브리드 선택: 밀도 사전선별 → 내용 점수 + 부품명 유사도 → 못 서면 다음 후보(fallback).
-		// LLM 확인은 아직 안 붙였으므로 llmSaysSpec=null(휴리스틱).
-		SpecFileSelector.Choice choice = SpecFileSelector.chooseSpecHybrid(scored, null, SPEC_MIN_SCORE);
-		SpecFileSelector.Candidate chosen = choice.chosen();
-		if (chosen == null) {
+		// 순위대로 걸어 내려가며 검증한다. 최고점 하나만 보면 그것이 공고문일 때 세 번째 후보에
+		// 있는 진짜 규격서를 놓친다. 규격서를 찾으면 즉시 멈추고, 못 찾으면 fallback 을 남긴다.
+		List<SpecFileSelector.Candidate> ranked = SpecFileSelector.rankHybrid(scored);
+		List<SpecDocumentValidator.Reviewable> reviewables = ranked.stream()
+				.map(c -> new SpecDocumentValidator.Reviewable(docByCandidate.get(c), confidenceOf(c)))
+				.toList();
+		SpecDocumentValidator.Walk walk = SpecDocumentValidator.walk(reviewables, userPicked);
+		if (!walk.found()) {
+			log.info("규격서 후보 {}건이 모두 거부됨 — 공고 메타만으로 진행한다", ranked.size());
 			return null;
 		}
+		SpecFileSelector.Candidate chosen = ranked.get(walk.index());
+		SpecDocumentValidator.Verdict verdict = walk.verdict();
+		int examined = walk.examined();
+
 		ParsedDocument doc = docByCandidate.get(chosen);
 		String url = urlByCandidate.getOrDefault(chosen, "");
 		SpecFileSelector.Density density = SpecFileSelector.density(chosen.markdown());
 		double similarity = SpecFileSelector.partNameSimilarity(chosen.markdown());
+		SpecFileSelector.Choice choice = new SpecFileSelector.Choice(chosen, confidenceOf(chosen));
+
 		Map<String, String> chosenFile = new LinkedHashMap<>();
 		chosenFile.put("name", doc.filename());
 		chosenFile.put("url", url);
 		chosenFile.put("confidence", choice.confidence());   // confirmed|heuristic|estimated
 		chosenFile.put("partSimilarity", String.format("%.2f", similarity));
 		chosenFile.put("tableRowDensity", String.format("%.2f", density.tableRowDensity()));
+		chosenFile.put("documentClass", verdict.documentClass() == null ? "" : verdict.documentClass());
+		chosenFile.put("disposition", verdict.disposition().name());   // ACCEPT|FALLBACK
+		chosenFile.put("specTrusted", String.valueOf(verdict.accepted()));
+		chosenFile.put("validationVia", verdict.via());
+		chosenFile.put("validationReasons", String.join(",", verdict.reasons()));
+		chosenFile.put("candidatesExamined", String.valueOf(examined));
+		chosenFile.put("selectedBy", userPicked ? "user" : "auto");
 		specFiles.add(chosenFile);
-		if (!"confirmed".equals(choice.confidence()) && !"heuristic".equals(choice.confidence())) {
+
+		if (!verdict.accepted()) {
+			// 규격서로 확인되진 않았다. 넘기되 판단은 LLM 에 맡긴다.
+			log.info("규격서 미확인 — LLM 판단에 맡김({}): {} — 문서종 {} · 후보 {}건 검토 · 사유 {}",
+					verdict.via(), doc.filename(),
+					verdict.documentClass() == null ? "미상" : verdict.documentClass(),
+					examined, String.join(",", verdict.reasons()));
+		}
+		else if (!"confirmed".equals(choice.confidence()) && !"heuristic".equals(choice.confidence())) {
 			log.info("규격서 확신 낮음({}): {} — 내용 {} · 유사도 {} · 표밀도 {}",
 					choice.confidence(), doc.filename(), chosen.score(),
 					String.format("%.2f", similarity), String.format("%.2f", density.tableRowDensity()));
 		}
-		return doc;
+		return new SpecSelection(doc, verdict);
 	}
 
 	private Map<String, Object> fetchOpening(String bidNtceNo) {
@@ -503,22 +595,40 @@ public class MarketIntelController {
 	 * (그 경우 예전과 같이 "표본 없음"이 된다). 이름 대조(matchAwards)는 DealAnalysisService 가 한다.
 	 */
 	private List<MarketPriceService.Award> fetchSimilarAwards(Map<String, Object> item) {
-		String name = firstNonBlank(item, "bidNtceNm", "prdctClsfcNoNm", "dtilPrdctClsfcNoNm", "bizNm");
-		if (name.isBlank()) {
+		// 공고명 전체가 아니라 품목 한 낱말로 훑는다 — 제목 전체는 거의 언제나 0건이다.
+		String keyword = DealAnalysisService.awardKeyword(
+				firstNonBlank(item, "dtilPrdctClsfcNoNm", "prdctClsfcNoNm"),
+				firstNonBlank(item, "bidNtceNm", "bizNm"));
+		if (keyword.isBlank()) {
 			return List.of();
 		}
+		// 공고의 구분을 그대로 넘긴다. "물품"으로 고정하면 용역·공사 공고는 구조적으로 0건이다.
+		String division = awardBidType(item);
 		try {
-			// 품목명 한 낱말로 최근 낙찰결과를 훑는다(물품). 대량 조회를 막게 perPage 는 넉넉히만.
 			com.electerior.g2bmaster.notice.SearchCriteria criteria =
 					new com.electerior.g2bmaster.notice.SearchCriteria(
-							name, "", "", null, "100", null, null, "", "", "", "", "물품", "");
+							keyword, "", "", null, "100", null, null, "", "", "", "", division, "");
 			List<Map<String, Object>> results = bidResultService.search(criteria, null).value();
 			return DealAnalysisService.awardsFromResults(results);
 		}
 		catch (RuntimeException e) {
-			log.debug("유사 낙찰 표본 조회 실패 {} — {}", name, e.getMessage());
+			log.debug("유사 낙찰 표본 조회 실패 {}({}) — {}", keyword, division, e.getMessage());
 			return List.of();   // 키 없음/조회 실패 — 표본 없음으로 남는다(회귀 아님)
 		}
+	}
+
+	/**
+	 * 낙찰결과 조회에 쓸 구분. 공고가 알려 주면 그대로 쓰고, 모르면 {@code 물품} 으로 둔다
+	 * (원본 동작 — 딜 분석 사용처의 대부분이 물품이다).
+	 */
+	private static String awardBidType(Map<String, Object> item) {
+		String raw = firstNonBlank(item, "businessDivision", "bidType", "bsnsDivNm", "indstrytyNm");
+		for (String known : new String[] {"물품", "용역", "공사", "외자"}) {
+			if (raw.contains(known)) {
+				return known;
+			}
+		}
+		return "물품";
 	}
 
 	private static String firstNonBlank(Map<String, Object> item, String... keys) {
