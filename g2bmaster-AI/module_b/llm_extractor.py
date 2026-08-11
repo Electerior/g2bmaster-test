@@ -536,13 +536,43 @@ SOURCE TEXT:
 5. 규격서에 하드웨어 요구가 전혀 없으면 items 를 빈 배열로 둔다. 억지로 채우지 마라.
 6. JSON 객체 하나로만 답한다. 설명도 코드펜스도 붙이지 마라.
 
-보기 — 같은 문서의 두 줄이 이렇게 갈린다.
+보기 — 다양한 요구사항 패턴 예시:
 
-  "Processor: Intel® Xeon® 6530P Processor 144M Cache, 2.30 GHz, 32core x2"
-   → 제품명이 적혀 있다.
+  예시 1. 제품명이 명시된 부품
+  원문: "Processor: Intel® Xeon® 6530P Processor 144M Cache, 2.30 GHz, 32core x2"
+  출력:
      {{"category":"CPU","name":"Intel Xeon 6530P","named":true,"qty":2,
        "constraints":[{{"attr":"cores","op":"eq","value":32,"unit":null,"raw":"32core"}}],
        "evidence":"Processor: Intel® Xeon® 6530P Processor 144M Cache, 2.30 GHz, 32core x2"}}
+
+  예시 2. 제품명 없이 사양만 요구한 경우 (단위 및 Boolean 정규화)
+  원문: "메모리: 64GB DDR5 4800MT/s ECC 지원 이상 x 4개"
+  출력:
+     {{"category":"RAM","name":null,"named":false,"qty":4,
+       "constraints":[
+         {{"attr":"capacity_gb","op":"gte","value":64,"unit":"GB","raw":"64GB"}},
+         {{"attr":"memory_type","op":"eq","value":"DDR5","unit":null,"raw":"DDR5"}},
+         {{"attr":"speed_mts","op":"gte","value":4800,"unit":"MT/s","raw":"4800MT/s"}},
+         {{"attr":"ecc","op":"eq","value":true,"unit":null,"raw":"ECC 지원 이상"}}
+       ],
+       "evidence":"메모리: 64GB DDR5 4800MT/s ECC 지원 이상 x 4개"}}
+
+  예시 3. 완제품/베어본 및 하위 구성품(children) 중첩
+  원문: "AI 학습용 GPU 서버 1SET (4U 랙마운트, 2000W 80Plus Titanium 파워 2개 내장)"
+  출력:
+     {{"category":"완제품","name":null,"named":false,"qty":1,"unit":"SET","prebuilt":true,
+       "constraints":[
+         {{"attr":"form_factor","op":"eq","value":"4U","unit":null,"raw":"4U 랙마운트"}}
+       ],
+       "children":[
+         {{"category":"파워","name":null,"named":false,"qty":2,
+           "constraints":[
+             {{"attr":"watts","op":"eq","value":2000,"unit":"W","raw":"2000W"}},
+             {{"attr":"efficiency","op":"eq","value":"80Plus Titanium","unit":null,"raw":"80Plus Titanium"}}
+           ],
+           "evidence":"2000W 80Plus Titanium 파워 2개 내장"}}
+       ],
+       "evidence":"AI 학습용 GPU 서버 1SET (4U 랙마운트, 2000W 80Plus Titanium 파워 2개 내장)"}}
 
 
 규격서 원문:
@@ -553,7 +583,7 @@ SOURCE TEXT:
         self,
         spec_type: Literal["cpu", "gpu"],
         chunks_list: List[List[str]],
-        model: str = "qwen3.6-35b-A3",
+        model: str = "meta/llama-3.3-70b",
         temperature: float = 0.0,
     ) -> List[HardwareExtraction]:
         """Extract from multiple independent chunk sets (e.g., multiple products)."""
