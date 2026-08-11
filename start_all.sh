@@ -14,8 +14,9 @@
 #   bash start_all.sh --force         우리 트리에서 뜬 것을 내리고 다시 띄운다
 #   bash start_all.sh --force-all     남의 작업 트리에서 뜬 것까지 내린다
 #   SKIP_AI=1 bash start_all.sh       이미 떠 있는 AI 를 그대로 두고 나머지만 띄운다
+#   SKIP_MODULES=1 bash start_all.sh  모듈 서버(8001 · 임베딩·스펙추출)를 띄우지 않는다
 #
-# DB 는 docker-compose.yml 의 MySQL 을 기본으로 쓴다(3307). 스크립트가 알아서 띄우므로
+# DB 는 docker-compose.yml 의 MySQL 을 기본으로 쓴다(3310). 스크립트가 알아서 띄우므로
 # 자격증명을 넘기지 않아도 된다. 다른 MySQL 을 쓰려면 USE_DOCKER_DB=0 과 MYSQL_* 를 준다.
 #
 # 자주 쓰는 환경변수:
@@ -56,7 +57,9 @@ PID_FILE="/tmp/g2bmaster_service_pids.txt"
 LOG_DIR="${LOG_DIR:-/tmp/g2bmaster-logs}"
 LAST_SERVICE_PID=""
 
-AI_PORT="${AI_PORT:-8000}"
+AI_PORT="${AI_PORT:-8001}"
+# module_a·module_b 서버. 추론 서비스(8000)와 다른 프로세스다 — 백엔드가 §J 를 프록시한다.
+MODULE_SERVER_PORT="${MODULE_SERVER_PORT:-8001}"
 BACKEND_PORT="${BACKEND_PORT:-8080}"
 FRONTEND_PORT="${FRONTEND_PORT:-5173}"
 AI_BASE_URL="http://localhost:${AI_PORT}"
@@ -79,6 +82,15 @@ if (( LLM_TIMEOUT_SECONDS * 1000 >= AI_TIMEOUT_MS )) || (( AI_TIMEOUT_MS >= ANAL
     echo "설정 오류: LLM_TIMEOUT_SECONDS(${LLM_TIMEOUT_SECONDS}초) < AI_TIMEOUT_MS(${AI_TIMEOUT_MS}ms) < ANALYSIS_LEASE_MS(${ANALYSIS_LEASE_MS}ms) 여야 합니다." >&2
     exit 1
 fi
+
+# ── 임베딩 모델 ──────────────────────────────────────────────────────────────
+# 파일 내용 유사도 검색에 쓰는 문장 임베딩. AI(8000)와 모듈 서버(8001)가 각자 자기
+# 프로세스에 상주시킨다 — 예열하지 않으면 첫 호출이 적재 4초를 혼자 뒤집어쓴다.
+#
+# **다국어판을 유지할 것.** 이름이 한 글자 다른 `paraphrase-MiniLM-L12-v2` 는 영어
+# 전용이고, 한국어 규격서에서는 점수가 거의 무작위가 된다.
+EMBEDDING_MODEL="${EMBEDDING_MODEL:-paraphrase-multilingual-MiniLM-L12-v2}"
+EMBEDDING_WARMUP="${EMBEDDING_WARMUP:-1}"
 
 # ── 3) 백엔드 빌드용 JDK ─────────────────────────────────────────────────────
 # pom.xml 의 java.version 이 25 다. mvn 이 잡는 기본 JDK 가 21 이면
@@ -284,14 +296,18 @@ skipped() {
 # HTTP 로 살아났는지 확인한다. 백엔드가 AI 보다 먼저 뜨면 첫 분석 요청이 연결 실패로 떨어진다.
 # **우리가 띄운 프로세스가 살아 있는지 함께 본다** — 포트만 보면 남의 프로세스를 우리 것으로 착각한다.
 wait_for_http() {
-    local name=$1 url=$2 pid=$3 attempts=${4:-60}
+    # 5번째 인자는 헤더다. 인증 뒤에 있는 헬스 경로는 헤더 없이는 403 이라, -f 를 쓰는
+    # 이 함수가 영원히 기다리게 된다(모듈 서버가 그렇다).
+    local name=$1 url=$2 pid=$3 attempts=${4:-60} header=${5:-}
+    local -a curl_args=(-fsS --max-time 2)
+    [[ -n "${header}" ]] && curl_args+=(-H "${header}")
     echo -n "Waiting for ${name} (${url}) "
     for ((i = 0; i < attempts; i++)); do
         if ! kill -0 "${pid}" 2>/dev/null; then
             echo " — 프로세스가 종료됐습니다. ${LOG_DIR}/${name}.log 를 확인하세요."
             return 1
         fi
-        if curl -fsS --max-time 2 "${url}" > /dev/null 2>&1; then
+        if curl "${curl_args[@]}" "${url}" > /dev/null 2>&1; then
             echo "— up (pid ${pid})"
             return 0
         fi
@@ -307,7 +323,7 @@ wait_for_http() {
 # (3) 백엔드가 붙을 바로 그 자리에 미리 붙어 본다. 셋을 뒤섞으면 "여기선 되는데
 # 백엔드는 죽는" 상태가 숨는다.
 
-# (1) DB 준비 — 기본은 compose MySQL(3307).
+# (1) DB 준비 — 기본은 compose MySQL(3310).
 # 이 환경의 시스템 MySQL(3306)은 비밀번호를 모르고 sudo 로 고칠 권한도 없어서,
 # 우리가 통제하는 인스턴스를 docker-compose.yml 로 띄운다.
 # USE_DOCKER_DB=0 이거나 MYSQL_HOST 를 직접 주면 compose 를 건너뛰고 그 DB 를 쓴다.
@@ -331,15 +347,20 @@ elif (( use_compose_db )); then
 
     # 백엔드는 이 값으로 붙는다. compose 파일의 기본값과 같은 자리다.
     export MYSQL_HOST="127.0.0.1"
-    export MYSQL_PORT="${MYSQL_PORT:-3307}"
+    export MYSQL_PORT="${MYSQL_PORT:-3310}"
     export MYSQL_USER="${MYSQL_USER:-g2b}"
     export MYSQL_PASSWORD="${MYSQL_PASSWORD:-g2b}"
     export MYSQL_DATABASE="${MYSQL_DATABASE:-g2b}"
 
     # 초기화 중인 MySQL 에 백엔드가 붙으면 Flyway 가 연결 거부로 죽는다. 헬스체크를 기다린다.
+    #
+    # 컨테이너 이름을 여기 박아 두면 compose 쪽 container_name 을 바꿨을 때 조용히
+    # 어긋난다 — inspect 가 실패해 unknown 으로 떨어지고, 준비되기를 80초 기다린 뒤
+    # 아무 일 없었다는 듯 넘어간다. compose 에게 직접 물어본다.
+    db_cid=$( cd "${BASE_DIR}" && docker compose ps -q db 2>/dev/null )
     echo -n "  MySQL 준비 대기 "
     for _ in $(seq 40); do
-        state=$(docker inspect -f '{{.State.Health.Status}}' g2b-mysql 2>/dev/null || echo unknown)
+        state=$(docker inspect -f '{{.State.Health.Status}}' "${db_cid}" 2>/dev/null || echo unknown)
         [[ "${state}" == "healthy" ]] && { echo "— ready"; break; }
         echo -n "."
         sleep 2
@@ -369,10 +390,10 @@ db_user="${MYSQL_USER:-g2b}"
 db_name="${MYSQL_DATABASE:-g2b}"
 # 백엔드가 붙는 바로 그 호스트·포트로 확인한다. 여기서 -h/-P 를 빠뜨리면 클라이언트는
 # 로컬 소켓(대개 시스템 MySQL 3306)으로 붙어, 백엔드가 쓸 인스턴스와 다른 것을 검사한다 —
-# 3307 에 compose DB 를 띄운 경우 "여기선 되는데 백엔드는 죽는"(혹은 그 반대)이 된다.
+# 3310 에 compose DB 를 띄운 경우 "여기선 되는데 백엔드는 죽는"(혹은 그 반대)이 된다.
 # 백엔드가 붙는 바로 그 호스트·포트로 확인한다. 여기서 -h/-P 를 빠뜨리면 클라이언트는
 # 로컬 소켓(대개 시스템 MySQL 3306)으로 붙어, 백엔드가 쓸 인스턴스와 다른 것을 검사한다 —
-# Docker 등으로 3307 에 띄운 경우 "여기선 되는데 백엔드는 죽는"(혹은 그 반대) 상태가 된다.
+# Docker 등으로 3310 에 띄운 경우 "여기선 되는데 백엔드는 죽는"(혹은 그 반대) 상태가 된다.
 db_host="${MYSQL_HOST:-127.0.0.1}"
 db_port="${MYSQL_PORT:-3306}"
 
@@ -456,14 +477,44 @@ free_planned_ports || exit 1
 # 구현은 GGUF 모델 경로·추론 서버 바이너리가 정해진 뒤에 한다(사용자 결정 대기).
 
 # ── AI ───────────────────────────────────────────────────────────────────────
-# 임베딩(/api/embed)과 module_a/module_b 까지 쓰려면 AI_INSTALL="make install-ml".
-# 없어도 서비스는 정상으로 뜨고 임베딩 경로만 503 을 준다.
+# 임베딩(/api/embed)과 module_a/module_b 를 쓰므로 ML 스택까지 설치한다.
+# 가볍게 띄우려면 AI_INSTALL="make install" 로 줄인다 — 그러면 임베딩 경로만 503 이 되고
+# 나머지 표면은 정상으로 돈다.
+#
+# EMBEDDING_MODEL 은 **다국어판이어야 한다.** 이름이 비슷한 paraphrase-MiniLM-L12-v2 는
+# 영어 전용이라 한국어 규격서에서 점수가 거의 무작위가 된다.
 if ! skipped AI; then
-    start_service "g2bmaster-ai" "${AI_DIR}" "${AI_INSTALL:-make install}" "make start" \
+    start_service "g2bmaster-ai" "${AI_DIR}" "${AI_INSTALL:-make install-ml}" "make start" \
         "PORT=${AI_PORT}" \
         "AI_SERVICE_SECRET=${AI_SERVICE_SECRET}" \
+        "EMBEDDING_MODEL=${EMBEDDING_MODEL}" \
+        "EMBEDDING_WARMUP=${EMBEDDING_WARMUP}" \
         "LLM_TIMEOUT_SECONDS=${LLM_TIMEOUT_SECONDS}"
     wait_for_http "g2bmaster-ai" "${AI_BASE_URL}/healthz" "${LAST_SERVICE_PID}" || true
+fi
+
+# ── 모듈 서버 (module_a·module_b) ────────────────────────────────────────────
+# 백엔드가 §J "하드웨어 스펙" 6개를 이쪽으로 프록시한다. 추론 서비스(8000)와 다른
+# 프로세스라 따로 띄운다.
+#
+# **비밀값이 없으면 띄우지 않는다.** module_server.py 의 가드는 INTERNAL_SECRET 이
+# 비어 있으면 모든 요청을 403 으로 막는다(fail-closed). 그 상태로 띄우면 프로세스는
+# 살아 있는데 전 엔드포인트가 막힌, 알아채기 어려운 모양이 된다 — 차라리 안 띄운다.
+if ! skipped MODULES; then
+    if [[ -z "${AI_SERVICE_SECRET}" ]]; then
+        echo "module-server: AI_SERVICE_SECRET 이 비어 있어 띄우지 않습니다."
+        echo "  (가드가 fail-closed 라 비밀값 없이 띄우면 전 엔드포인트가 403 입니다)"
+        echo "  쓰려면: AI_SERVICE_SECRET=아무값 bash start_all.sh"
+    else
+        start_service "module-server" "${AI_DIR}" "" "make module-server" \
+            "MODULE_SERVER_PORT=${MODULE_SERVER_PORT}" \
+            "EMBEDDING_MODEL=${EMBEDDING_MODEL}" \
+            "EMBEDDING_WARMUP=${EMBEDDING_WARMUP}" \
+            "INTERNAL_SECRET=${AI_SERVICE_SECRET}"
+        # /health 는 가드 뒤에 있어 헤더 없이는 403 이다. 비밀값을 실어 물어본다.
+        wait_for_http "module-server" "http://localhost:${MODULE_SERVER_PORT}/health" \
+            "${LAST_SERVICE_PID}" 60 "X-Internal-Secret: ${AI_SERVICE_SECRET}" || true
+    fi
 fi
 
 # ── Backend ──────────────────────────────────────────────────────────────────

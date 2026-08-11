@@ -436,6 +436,17 @@ public class MarketIntelController {
 	private static final int MAX_SPEC_DOWNLOADS = 6;
 
 	/**
+	 * 첨부 수집 전체에 주는 시간. <b>건수 제한만으로는 시간이 묶이지 않는다</b> —
+	 * {@code AttachmentFetcher} 가 한 건에 60초까지 쓰므로 6건이면 최악 360초다.
+	 * 실측에서 첨부 7건짜리 공고 셋이 300초에도 끝나지 않았고, 화면은 그보다 훨씬 앞서
+	 * 포기해 "분석 실패"로 보였다.
+	 *
+	 * <p>여기서 끊어도 이미 받아 둔 후보로 판정은 진행한다 — 규격서가 앞 순위에 오도록
+	 * 파일명 랭크로 정렬해 두었으므로, 뒤쪽을 못 본 손해는 대개 계약예규·서식 쪽이다.
+	 */
+	private static final long SPEC_FETCH_BUDGET_MS = 90_000L;
+
+	/**
 	 * 후보 하나의 선택 확신 등급. {@code llmSaysSpec} 없이 부를 때의
 	 * {@link SpecFileSelector#chooseSpecHybrid} 판정과 같은 기준이다.
 	 */
@@ -490,8 +501,14 @@ public class MarketIntelController {
 		Map<SpecFileSelector.Candidate, String> urlByCandidate = new java.util.IdentityHashMap<>();
 
 		int downloads = 0;
+		long deadline = System.nanoTime() + SPEC_FETCH_BUDGET_MS * 1_000_000L;
 		for (Map<String, Object> candidate : candidates) {
 			if (downloads >= MAX_SPEC_DOWNLOADS) {
+				break;
+			}
+			if (System.nanoTime() >= deadline) {
+				log.info("첨부 수집 시간 예산({}ms) 초과 — 지금까지 받은 {}건으로 판정한다",
+						SPEC_FETCH_BUDGET_MS, scored.size());
 				break;
 			}
 			String name = str(candidate.get("name"));

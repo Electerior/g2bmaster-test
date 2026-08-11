@@ -191,12 +191,24 @@ Java 에서는 `@RequireAppAuth` 애너테이션 + `AppAuthInterceptor`,
 > 서약서 경로는 **문서 태그가 확인되기 전에는 첨부를 내려받지 않는다**
 > (`{status:'tag_missing'}` 로 400). 불필요한 다운로드와 LLM 호출을 막는 가드다.
 
-### J. 하드웨어 스펙 (6) — Python 모듈 서버 프록시, 전부 앱 키
+### J. 하드웨어 스펙 — Python 모듈 서버 프록시, 전부 앱 키
 
-`POST /api/search/titles`, `POST /api/extract/specs`, `GET /api/specs/cpu`,
-`GET /api/specs/gpu`, `POST /api/specs/fetch-notices`, `POST /api/specs/search-documents`
+`POST /api/extract/specs`, `GET /api/specs/cpu`, `GET /api/specs/gpu`,
+`POST /api/specs/fetch-notices`, `POST /api/specs/search-documents`,
+`POST /api/embed/document`, `POST /api/search/document`
 
 연결 실패 시 **502** `{error: 'Module server unavailable: …'}`.
+모델을 못 읽었을 때는 **503** — "잠시 없음"이라 호출부가 재시도할 수 있다.
+
+> **폐지**: `POST /api/search/titles` · `POST /api/rank/titles`.
+> 제목 의미검색은 신호가 너무 얇았다 — 공고 제목에는 정작 필요한 사양이 한 글자도
+> 없고 그건 첨부 본문에만 있다. 유사도는 이제 **파일 내용**에 대해서만 건다.
+>
+> `POST /api/embed/document` 는 문서를 청크로 잘라 벡터와 **원문 좌표**를 함께 낸다.
+> 호출부가 따로 자르면 각 청크가 원문 어디였는지를 잃고, 그러면 검색 결과를 근거로
+> 인용할 수 없다. `POST /api/search/document` 는 문서 하나 안에서 질의와 가까운
+> 대목을 찾는다 — 색인은 그 요청 안에서만 살고 상주하지 않는다(요청끼리 섞이면
+> 오류 없이 결과만 조용히 달라진다).
 
 ### K. 시스템·운영 (16)
 

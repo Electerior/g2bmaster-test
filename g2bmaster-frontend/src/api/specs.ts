@@ -8,38 +8,68 @@ import { post } from '@/lib/apiClient';
 
 export type SpecType = 'cpu' | 'gpu';
 
-/* ─── 제목 의미 검색 ──────────────────────────────────────────────────────── */
-
-export interface SearchTitlesRequest {
-  query: string;
-  type?: SpecType | 'both';
-  /** 1~50, 기본 5. */
-  top_k?: number;
-}
-
-export interface SearchTitlesResponse {
-  /** 모듈 서버 응답을 그대로 통과시킨다 — 형태 변경은 그쪽 저장소 소관. */
-  results?: unknown[];
-  [key: string]: unknown;
-}
-
-export function searchTitles(body: SearchTitlesRequest): Promise<SearchTitlesResponse> {
-  return post<SearchTitlesResponse>('/api/search/titles', body);
-}
+/*
+ * 제목 의미검색(`/api/search/titles`·`/api/rank/titles`)은 폐지했다.
+ * 공고 제목에는 정작 필요한 사양이 한 글자도 없고 그건 첨부 본문에만 있다 —
+ * 유사도는 이제 파일 내용에 대해서만 건다.
+ */
 
 /* ─── LLM 스펙 추출 ───────────────────────────────────────────────────────── */
 
+/**
+ * 추출 방향. 둘은 입력도 출력도 다르다.
+ *
+ * - `datasheet` — 제조사 스펙 문서에서 **제품 하나의 값**을 뽑는다. 스펙 사전을 쌓는 쪽.
+ *   `spec_type` 이 없으면 서버가 400 이다(어느 스키마로 제약할지 모른다).
+ * - `requirement` — 조달 규격서에서 **요구 품목과 조건**을 뽑는다. `spec_type` 은 무시된다.
+ */
+export type ExtractMode = 'datasheet' | 'requirement';
+
 export interface ExtractSpecsRequest {
-  spec_type: SpecType;
+  mode?: ExtractMode;
+  /** `mode='datasheet'` 일 때 필수. */
+  spec_type?: SpecType;
   /** 비어 있으면 서버가 400. */
   chunks: string[];
   /** 비우면 서버가 현재 로드된 모델을 쓴다. */
   model?: string;
   backend?: string;
   base_url?: string;
+  /** 문서에 제품이 여럿일 때 뽑을 제품명. `datasheet` 방향에서만 쓴다. */
+  target?: string;
+}
+
+/** 규격서가 요구한 조건 하나. 값이 아니라 조건이라 연산자가 붙는다. */
+export interface SpecConstraint {
+  attr: string;
+  op: 'gte' | 'lte' | 'eq' | 'approx';
+  value: number | string;
+  unit?: string | null;
+  raw: string;
+}
+
+export interface RequirementItem {
+  category: string;
+  /** 규격서에 제품명이 적혀 있을 때만 채워진다. 없으면 null. */
+  name: string | null;
+  named: boolean;
+  qty: number;
+  unit?: string | null;
+  constraints: SpecConstraint[];
+  allow_equivalent: boolean;
+  prebuilt: boolean;
+  children?: RequirementItem[];
+  notes?: string[];
+  evidence: string;
+  /** 서버가 원문에서 찾아 붙인 좌표. `found=false` 면 원문에 없는 문장이다. */
+  evidence_span?: { quote: string; offset: number; length: number; found: boolean } | null;
 }
 
 export interface ExtractSpecsResponse {
+  mode?: ExtractMode;
+  /** `mode='requirement'` 일 때만. */
+  items?: RequirementItem[];
+  is_sufficient_data?: boolean;
   [key: string]: unknown;
 }
 
@@ -79,10 +109,6 @@ export function searchSpecDocuments(
   body: SearchSpecDocumentsRequest,
 ): Promise<SpecPassthroughResponse> {
   return post<SpecPassthroughResponse>('/api/specs/search-documents', body);
-}
-
-export function useSearchTitles() {
-  return useMutation({ mutationFn: searchTitles });
 }
 
 export function useExtractSpecs() {

@@ -8,6 +8,7 @@
  */
 import { useMutation } from '@tanstack/react-query';
 import { post } from '@/lib/apiClient';
+import { createLimiter } from '@/lib/taskQueue';
 import type {
   AiFallbackFlags,
   DocumentSignals,
@@ -224,8 +225,30 @@ export interface DealAnalysisResponse {
   _analyzedAt?: string;
 }
 
+/*
+ * 깊은 분석의 마감과 동시 실행 수.
+ *
+ * **마감은 바깥쪽이 안쪽보다 길어야 한다.** 순서가 뒤집히면 서버는 멀쩡히 일하고
+ * 있는데 화면만 포기하고, 사용자에게는 "분석 실패"로 보인다. start_all.sh 가
+ * `LLM(100s) < AI(120s) < 리스(300s)` 를 검사하는데 브라우저는 그 사슬에서 빠져
+ * 있었다 — apiClient 기본값 60초가 가장 짧은 마감이었다.
+ *
+ * 동시 실행을 묶는 이유는 따로 있다. 브라우저 연결 한도(오리진당 6) 때문에 나머지
+ * 요청은 큐에서 기다리는데 그동안에도 axios 마감이 흐른다. 여기서 붙잡으면 대기가
+ * 마감에 포함되지 않고, 백엔드도 20건을 한꺼번에 맞지 않아 건당 응답이 빨라진다.
+ */
+const DEEP_DEADLINE_MS = 240_000;
+const DEEP_CONCURRENCY = 4;
+const deepQueue = createLimiter(DEEP_CONCURRENCY);
+
 export function analyzeDeal(body: DealAnalysisRequest): Promise<DealAnalysisResponse> {
-  return post<DealAnalysisResponse>('/api/deal-analysis', body);
+  // `deep` 을 안 주면 백엔드 기본값이 true 다(첨부를 연다). 얕은 분석만 빠른 길로 보낸다.
+  if (body.deep === false) {
+    return post<DealAnalysisResponse>('/api/deal-analysis', body);
+  }
+  return deepQueue(() =>
+    post<DealAnalysisResponse>('/api/deal-analysis', body, { timeout: DEEP_DEADLINE_MS }),
+  );
 }
 
 /* ─── 공고 AI 요약 ────────────────────────────────────────────────────────── */
