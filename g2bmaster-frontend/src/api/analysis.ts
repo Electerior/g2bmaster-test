@@ -31,6 +31,13 @@ export interface DealAnalysisRequest {
   include?: { spec?: boolean; parts?: boolean; market?: boolean; opening?: boolean };
   /** 저장된 deep 결과를 무시하고 다시 분석한다. */
   forceRefresh?: boolean;
+  /**
+   * 첨부 중 이 URL 을 규격서로 쓴다. 자동 선택(휴리스틱)을 건너뛴다.
+   *
+   * <b>공고 첨부 목록에 있는 URL 이어야 한다</b> — 백엔드가 목록과 대조하고, 없으면 무시하고
+   * 자동 선택으로 돌아간다(임의 URL 다운로드 금지).
+   */
+  specFileUrl?: string;
 }
 
 /** 단가 추정 결과는 "못 찾음"과 "찾음"이 형태가 달라 union 으로 온다. */
@@ -58,7 +65,34 @@ export type EstimatedUnitCost =
         role?: 'base' | 'part';
         /** 'itmaya'(가격표 색인) | 'danawa'(웹검색). */
         source?: string;
+        /** 규격서에 제품명이 적혀 있었나(true) / 사양만 있어 AI 가 추론했나(false). */
+        named?: boolean;
+        /** AI 가 근거로 든 규격서 원문 한 줄. 백엔드가 원문과 대조한다. */
+        evidence?: string;
+        // ── 백엔드 검증 결과 (UnitCostValidator) ──────────────────────────
+        /** 이 부품의 근거가 규격서 원문에서 확인됐는가. */
+        evidenceInSpec?: boolean;
+        /** 'quote'(근거 문장 대조) | 'token'(모델 토큰 대조). */
+        evidenceBasis?: 'quote' | 'token';
+        /** 총액에 반영됐는가. false 면 아래 사유로 빠진 행이다. */
+        acceptedForCost?: boolean;
+        /** 'no-evidence-in-spec' | 'category-conflict' | 'zero-priced-row' | 'inferred-row' | 'unpriced'. */
+        rejectReason?: string;
+        /** 사양→모델 탐색기가 막혀 모델을 못 찾았다. "규격서에 없음"과 다른 사건이다. */
+        searchUnavailable?: boolean;
       }>;
+      // ── 백엔드 검증 결과 (UnitCostValidator) ────────────────────────────
+      /**
+       * 총액 신뢰 등급. **`untrusted` 면 `mid` 를 단가로 쓰면 안 된다** — 백엔드도
+       * `deal.unitCostSource` 를 주지 않는다. 참고값으로만 표시할 것.
+       */
+      costConfidence?: 'confirmed' | 'partial' | 'untrusted';
+      /** 규격서 대조를 통과한 행만 합산한 단가. `untrusted` 면 null. */
+      confirmedMid?: number | null;
+      /** 채택된 금액 / 전체 금액. */
+      evidenceRatio?: number;
+      /** 'not-all-priced' · 'category-conflict:gpu' · 'no-base-system' 등. */
+      costWarnings?: string[];
       currency: 'KRW';
       /** 'itmaya' | 'danawa' | 'hybrid'(베어본은 색인, 부품은 웹). */
       priceSource?: string;
@@ -134,7 +168,23 @@ export interface DealAnalysisResponse {
     products: unknown[];
     parsedFiles: Array<{ name: string; textLength: number }>;
     /** confidence: confirmed|heuristic|estimated — 규격서 선택의 확신도. */
-    files: Array<{ url: string; name: string; confidence?: string }>;
+    files: Array<{
+      url: string;
+      name: string;
+      confidence?: string;
+      /** 표제로 읽은 문서종(규격서·제안요청서·공고문 …). 못 읽었으면 빈 문자열. */
+      documentClass?: string;
+      /** 'ACCEPT'(규격서로 확인) | 'FALLBACK'(미확인 — LLM 판단에 맡김). */
+      disposition?: string;
+      /** 'true' | 'false' — 규격서로 확인됐는가. 문자열로 온다(files 는 문자열 맵). */
+      specTrusted?: string;
+      /** 'title/anchored' | 'title/cover' | 'score/no-title' — 어느 층이 판정했는지. */
+      validationVia?: string;
+      /** 'class-may-embed-spec' · 'no-title' 등. 비어 있을 수 있다. */
+      validationReasons?: string;
+      /** 'user'(사람이 지목) | 'auto'(휴리스틱 선택). */
+      selectedBy?: string;
+    }>;
     fileEntryCount: number;
     quantityFound: unknown;
     deliveryFound: string | null;

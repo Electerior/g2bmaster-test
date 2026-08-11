@@ -31,6 +31,44 @@ import '@/features/deal/deal.css';
 /** 한 페이지에 붙이는 공고 수. 카드마다 딜 분석을 돌리므로 20 으로 묶고 페이지로 넘긴다. */
 const PER_PAGE = 20;
 
+/** 백엔드 단가 신뢰 등급 → 화면 문구. */
+const VERIFY_LABEL: Record<string, string> = {
+  confirmed: '✅ 규격서 대조 완료',
+  partial: '⚠ 일부만 규격서에서 확인',
+  untrusted: '⛔ 규격서와 대조되지 않아 단가 미확정',
+};
+
+/** 검증 경고 코드 → 짧은 한국어. `category-conflict:gpu:resolved` 처럼 접미가 붙어 온다. */
+function warnLabel(code: string): string {
+  const [key, category, resolved] = code.split(':');
+  switch (key) {
+    case 'category-conflict':
+      return resolved === 'resolved'
+        ? `${category} 중복 정리`
+        : `${category} 부품이 서로 다름`;
+    case 'not-all-priced':
+      return '일부 행 가격 미확인';
+    case 'no-base-system':
+      return '베어본 없음';
+    case 'no-evidence-in-spec':
+      return '규격서에 없는 부품 포함';
+    case 'inferred-row':
+      return '추정 행 포함';
+    case 'zero-priced-row':
+      return '0원 행 포함';
+    case 'evidence-ratio-below-floor':
+      return '근거 비중 미달';
+    case 'no-spec-text-to-verify':
+      return '대조할 규격서 원문 없음';
+    case 'prebuilt-bundle':
+      return '완제품 번들로 판정';
+    case 'discovery-search-unavailable':
+      return '부품 탐색 검색 차단됨';
+    default:
+      return code;
+  }
+}
+
 /** 검색 결과 한 건을 deal-analysis 의 item 으로. 공고 객체를 그대로 넘기는 자리다. */
 function toDealItem(item: NoticeIndexItem): Record<string, unknown> {
   return {
@@ -38,6 +76,11 @@ function toDealItem(item: NoticeIndexItem): Record<string, unknown> {
     bidNtceNm: item.noticeName ?? '',
     presmptPrce: item.estimatedPrice ?? undefined,
     dtilPrdctClsfcNo: item.detailProductCode ?? undefined,
+    // 낙찰결과 표본 조회에 쓴다 — 구분을 안 넘기면 백엔드가 '물품'으로 고정해
+    // 용역·공사 공고는 구조적으로 표본 0건이 된다.
+    businessDivision: item.businessDivision ?? undefined,
+    // 품목분류명이 있으면 백엔드가 공고명 대신 이것을 검색어로 쓴다(더 정확하다).
+    dtilPrdctClsfcNoNm: item.productList?.[0]?.name ?? undefined,
     attachmentUrls: item.attachmentUrls ?? undefined,
   };
 }
@@ -57,6 +100,11 @@ export function DealRadarScreen() {
    * 크면(=재검토된 공고) forceRefresh 를 실어 서버가 저장된 결과까지 무시하고 새로 분석한다.
    */
   const [refreshTokens, setRefreshTokens] = useState<Record<string, number>>({});
+  /*
+   * 공고별 "이 첨부를 규격서로 쓴다" 지목. 자동 선택은 휴리스틱이고 사람은 공고를 읽었으므로
+   * 사람의 지목이 이긴다. 쿼리 키에 넣어야 지목이 바뀔 때 실제로 다시 분석한다.
+   */
+  const [specPicks, setSpecPicks] = useState<Record<string, string>>({});
 
   const query = useMemo(() => buildNoticeIndexQuery(criteria, { perPage: PER_PAGE }), [criteria]);
 
@@ -67,21 +115,33 @@ export function DealRadarScreen() {
   const analyses = useQueries({
     queries: items.map((item) => {
       const token = refreshTokens[item.id] ?? 0;
+      const specFileUrl = specPicks[item.id];
       return {
-        queryKey: ['deal-analysis', item.id, deep, token],
+        queryKey: ['deal-analysis', item.id, deep, token, specFileUrl ?? ''],
         queryFn: () =>
           analyzeDeal({
             item: toDealItem(item),
-            deep,
+            // 규격서를 지목했다면 깊은 분석을 해야 의미가 있다 — 얕은 분석은 첨부를 안 연다.
+            deep: deep || Boolean(specFileUrl),
             include: { opening: false },
             // 재검토된 공고만 서버 캐시를 우회한다. 첫 조회는 저장된 결과를 그대로 쓴다.
             forceRefresh: token > 0,
+            ...(specFileUrl ? { specFileUrl } : {}),
           }),
         staleTime: Infinity,
         retry: false,
       };
     }),
   });
+
+  /** 첨부 하나를 규격서로 지목한다. 같은 것을 다시 누르면 자동 선택으로 되돌린다. */
+  const pickSpec = (id: string, url: string) =>
+    setSpecPicks((prev) => {
+      const next = { ...prev };
+      if (next[id] === url) delete next[id];
+      else next[id] = url;
+      return next;
+    });
 
   const reanalyze = (id: string) =>
     setRefreshTokens((prev) => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
@@ -168,6 +228,8 @@ export function DealRadarScreen() {
                 pending={analyses[i]?.isPending ?? true}
                 error={analyses[i]?.error as Error | undefined}
                 onReanalyze={() => reanalyze(item.id)}
+                specPick={specPicks[item.id]}
+                onPickSpec={(url: string) => pickSpec(item.id, url)}
               />
             ))}
           </div>
@@ -188,12 +250,17 @@ function DealCard({
   pending,
   error,
   onReanalyze,
+  specPick,
+  onPickSpec,
 }: {
   item: NoticeIndexItem;
   analysis: DealAnalysisResponse | undefined;
   pending: boolean;
   error: Error | undefined;
   onReanalyze: () => void;
+  /** 사용자가 규격서로 지목한 첨부 URL. 없으면 자동 선택. */
+  specPick?: string;
+  onPickSpec: (url: string) => void;
 }) {
   const market = analysis?.market;
   const est = analysis?.estimatedUnitCost;
@@ -208,7 +275,10 @@ function DealCard({
   const [rows, setRows] = useState<PriceRow[]>([]);
   // 분석 결과가 오면 표 초기값을 채운다(사람이 아직 안 건드렸을 때만).
   useEffect(() => {
-    if (est && est.matched && rows.length === 0) {
+    // 규격서 대조를 통과하지 못한 추정(untrusted)은 표를 미리 채우지 않는다. 채워 두면
+    // 사람이 그대로 저장해 근거 없는 합계가 saved_notice.price_rows 에 눌러앉는다.
+    // 부품 목록은 아래 breakdown 표시로 여전히 볼 수 있다.
+    if (est && est.matched && rows.length === 0 && est.costConfidence !== 'untrusted') {
       setRows(rowsFromBreakdown(est.breakdown));
     }
   }, [est, rows.length]);
@@ -281,25 +351,49 @@ function DealCard({
             {rows.length ? (
               <Stat label="가격표 합계" value={fmtMoney(priceTotal(rows))} highlight />
             ) : est && est.matched ? (
-              <Stat label="부품 단가(중앙)" value={fmtMoney(est.mid)} highlight />
+              // 백엔드가 규격서와 대조해 확정한 값만 강조한다. untrusted 인데 mid 를 크게
+              // 띄우면 화면이 검증을 무력화한다 — 손익 계산에도 안 들어가는 숫자다.
+              est.costConfidence === 'untrusted' ? (
+                <Stat label="부품 단가(미확정)" value={`${fmtMoney(est.mid)} (참고)`} />
+              ) : (
+                <Stat label="부품 단가(중앙)" value={fmtMoney(est.confirmedMid ?? est.mid)} highlight />
+              )
             ) : null}
           </>
         )}
       </dl>
 
       {est && est.matched ? (
-        <p className="meta deal-parts">
-          부품 {est.breakdown.filter((b) => b.role !== 'base').length}종
-          {est.hasBase ? ' · 베어본 포함' : ''}
-          {est.gpuCount ? ` · GPU ${est.gpuCount}장` : ''}
-          {est.allPriced === false ? ' · 일부 가격 미확인' : ''}
-          {est.prebuilt?.isPrebuilt && est.prebuilt.comparables?.length
-            ? ` · 완제품 후보 ${est.prebuilt.comparables.length}건(최저 ${fmtMoney(est.prebuilt.comparables[0]?.priceKrw)})`
-            : ''}
-        </p>
+        <>
+          <p className="meta deal-parts">
+            부품 {est.breakdown.filter((b) => b.role !== 'base').length}종
+            {est.hasBase ? ' · 베어본 포함' : ''}
+            {est.gpuCount ? ` · GPU ${est.gpuCount}장` : ''}
+            {est.allPriced === false ? ' · 일부 가격 미확인' : ''}
+            {est.prebuilt?.isPrebuilt && est.prebuilt.comparables?.length
+              ? ` · 완제품 후보 ${est.prebuilt.comparables.length}건(최저 ${fmtMoney(est.prebuilt.comparables[0]?.priceKrw)})`
+              : ''}
+          </p>
+          {/* 검증 결과 — 몇 개 중 몇 개가 규격서에서 확인됐는지. 숫자만 보여 주면
+              사람이 근거 없는 합계를 그대로 믿는다. */}
+          {est.costConfidence ? (
+            <p className={`meta deal-verify ${est.costConfidence}`}>
+              {VERIFY_LABEL[est.costConfidence]}
+              {typeof est.evidenceRatio === 'number'
+                ? ` · 규격서 근거 ${Math.round(est.evidenceRatio * 100)}%`
+                : ''}
+              {` · 총액 반영 ${est.breakdown.filter((b) => b.acceptedForCost).length}/${est.breakdown.length}행`}
+              {est.costWarnings?.length ? ` · ${est.costWarnings.map(warnLabel).join(' · ')}` : ''}
+            </p>
+          ) : null}
+        </>
       ) : est && !est.matched ? (
         <p className="meta">부품 단가: {est.reason}</p>
       ) : null}
+
+      {/* 단가원이 없을 때 백엔드가 이유를 문장으로 준다. 표시하지 않으면 사용자는
+          왜 손익이 안 나오는지 알 수 없다. */}
+      {analysis?.note ? <p className="meta deal-note">{analysis.note}</p> : null}
 
       {editing ? (
         <>
@@ -308,18 +402,56 @@ function DealCard({
         </>
       ) : null}
 
+      {/* 어떤 첨부를 규격서로 골랐는지, 그리고 그것이 규격서로 확인됐는지.
+          FALLBACK 이면 "규격서를 못 찾아 이 문서로 대신했다"는 뜻이라 반드시 보여야 한다. */}
+      {analysis?.spec?.files?.length ? (
+        <p className="meta deal-specfile">
+          규격서:{' '}
+          {analysis.spec.files[0].url ? (
+            <a href={analysis.spec.files[0].url} target="_blank" rel="noopener noreferrer">
+              {analysis.spec.files[0].name}
+            </a>
+          ) : (
+            analysis.spec.files[0].name
+          )}
+          {analysis.spec.files[0].documentClass ? ` · ${analysis.spec.files[0].documentClass}` : ''}
+          {analysis.spec.files[0].selectedBy === 'user' ? ' · 사용자 지정' : ''}
+          {analysis.spec.files[0].specTrusted === 'false' ? (
+            <span className="price-rejected" title="표제로 규격서임을 확인하지 못했다. 더 나은 후보가 없어 이 문서를 넘겼고, 부품 유무는 AI 가 판단했다.">
+              미확인
+            </span>
+          ) : null}
+        </p>
+      ) : null}
+
       {/* 첨부 — 값 있는 것만 다운로드 링크로(IndexNoticeDrawer 와 같은 패턴). */}
       {attachments.length ? (
         <div className="deal-attachments">
           <span className="deal-attachments-label">첨부 {attachments.length}건</span>
           <ul className="attachment-list">
-            {attachments.map((file, i) => (
-              <li key={`${file.url}-${i}`}>
-                <a href={file.url} target="_blank" rel="noopener noreferrer">
-                  {file.name || file.url}
-                </a>
-              </li>
-            ))}
+            {attachments.map((file, i) => {
+              const picked = specPick === file.url;
+              return (
+                <li key={`${file.url}-${i}`}>
+                  <a href={file.url} target="_blank" rel="noopener noreferrer">
+                    {file.name || file.url}
+                  </a>
+                  {/* 자동 선택이 엉뚱한 문서를 집었을 때 사람이 직접 지목한다.
+                      다시 누르면 자동 선택으로 되돌아간다. */}
+                  <button
+                    type="button"
+                    className={picked ? 'spec-pick active' : 'spec-pick'}
+                    aria-pressed={picked}
+                    onClick={() => onPickSpec(file.url!)}
+                    title={picked
+                      ? '지목을 해제하고 자동 선택으로 되돌린다'
+                      : '이 첨부를 규격서로 보고 분석한다'}
+                  >
+                    {picked ? '✓ 규격서로 지정됨' : '이 파일로 분석'}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       ) : null}

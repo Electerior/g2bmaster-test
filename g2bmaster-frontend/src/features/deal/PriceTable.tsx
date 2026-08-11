@@ -8,7 +8,7 @@
  */
 import { useMemo } from 'react';
 import { fmtMoney } from '@/domain/format';
-import { priceTotal, rowAmount, type PriceRow } from './priceRows';
+import { REJECT_LABEL, priceTotal, rowAmount, type PriceRow } from './priceRows';
 
 export function PriceTable({
   rows,
@@ -38,7 +38,8 @@ export function PriceTable({
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} className={[row.role === 'base' ? 'base' : '', row.inferred ? 'inferred' : '']
+            <tr key={i} className={[row.role === 'base' ? 'base' : '', row.inferred ? 'inferred' : '',
+              row.rejectReason ? 'rejected' : '']
               .filter(Boolean).join(' ')}>
               <td>
                 {readOnly ? (row.category ?? '') : (
@@ -52,6 +53,18 @@ export function PriceTable({
                     aria-label="품목" />
                 )}
                 {row.inferred ? <span className="price-inferred" title="AI 가 가격을 특정하지 못해 추정한 값">추정</span> : null}
+                {row.rejectReason ? (
+                  <span className="price-rejected"
+                    title="백엔드가 규격서와 대조해 총액에서 뺀 행이다. 합계에 넣으려면 근거를 직접 확인할 것.">
+                    {REJECT_LABEL[row.rejectReason] ?? row.rejectReason}
+                  </span>
+                ) : null}
+                {row.searchUnavailable ? (
+                  <span className="price-rejected"
+                    title="사양으로 모델을 찾는 검색이 일시 차단돼 있었다. 규격서에 없어서가 아니다.">
+                    탐색불가
+                  </span>
+                ) : null}
               </td>
               <td className="num">
                 {readOnly ? row.qty : (

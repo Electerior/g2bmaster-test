@@ -55,6 +55,50 @@ function respondGet(url: string) {
   return Promise.resolve({ items: [], totalCount: 0, pageNo: 1, numOfRows: 20 });
 }
 
+
+/** 딜 분석 응답 한 벌 — 백엔드 UnitCostValidator 가 붙이는 필드를 포함한다. */
+function analysisWith(confidence: 'confirmed' | 'partial' | 'untrusted', extra: Record<string, unknown> = {}) {
+  return {
+    bidNtceNo: 'R26-0001',
+    score: null,
+    facts: { productName: '', productCode: '', quantity: 1, unitPrice: 0, budget: 45000000 },
+    market: null,
+    opening: null,
+    deal: {
+      budget: 45000000, expectedAward: null, medianRate: null, unitCost: null, quantity: 1,
+      cost: 0, hasCost: false, profitAtBudget: 0, profitAtExpected: 0, profitAtBid: 0,
+      marginPctAtExpected: 0, breakevenBid: 0, bidRate: 0,
+      unitCostSource: confidence === 'untrusted' ? null : 'estimated',
+    },
+    simBidUsed: null,
+    spec: {
+      text: '', products: [], parsedFiles: [], fileEntryCount: 1,
+      quantityFound: null, deliveryFound: null,
+      files: [{ url: 'https://files.example/spec.hwp', name: '규격서.hwp',
+                documentClass: '공고문', specTrusted: 'false' }],
+    },
+    estimatedUnitCost: {
+      matched: true, low: 1, high: 3, mid: 73691235, gpuCount: 1, hasBase: true,
+      allPriced: false, currency: 'KRW',
+      costConfidence: confidence,
+      confirmedMid: confidence === 'untrusted' ? null : 20000000,
+      evidenceRatio: confidence === 'untrusted' ? 0.15 : 0.9,
+      costWarnings: ['not-all-priced', 'category-conflict:gpu'],
+      breakdown: [
+        { category: 'System', option: 'ASUS ESC4000', product: null, qty: 1, low: 20000000,
+          high: 20000000, role: 'base', acceptedForCost: true, evidenceInSpec: true },
+        { category: 'GPU', option: 'NVIDIA TESLA H100', product: null, qty: 1, low: 5000000,
+          high: 5000000, role: 'part', acceptedForCost: false, evidenceInSpec: false,
+          rejectReason: 'no-evidence-in-spec' },
+      ],
+      ...extra,
+    },
+    d2bGw: null,
+    note: '추정된 부품이 규격서 내용과 일치하지 않아 단가를 확정하지 않았습니다.',
+    _fromCache: false,
+  };
+}
+
 function renderScreen(search = '') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
@@ -141,5 +185,86 @@ describe('DealRadarScreen', () => {
     expect(badge?.textContent).toBe('외자');
     // 어떤 구분도 회색 fallback(type-etc)으로 떨어지지 않는다.
     expect(container.querySelector('.type-badge.type-etc')).toBeNull();
+  });
+
+  it('untrusted 단가는 강조하지 않고 참고값으로 표시한다 — 화면이 검증을 무력화하면 안 된다', async () => {
+    post.mockImplementation((url: string) =>
+      url === '/api/deal-analysis' ? Promise.resolve(analysisWith('untrusted')) : Promise.resolve({}));
+    const { container } = renderScreen();
+
+    await screen.findAllByText('부품 단가(미확정)');
+    expect(screen.queryByText('부품 단가(중앙)')).toBeNull();
+    // 강조(highlight) 가 붙지 않는다.
+    const stat = Array.from(container.querySelectorAll('div'))
+      .find((el) => el.textContent === '부품 단가(미확정)');
+    expect(stat?.closest('div')?.className ?? '').not.toContain('highlight');
+  });
+
+  it('확정 단가는 mid 가 아니라 confirmedMid 를 쓴다', async () => {
+    post.mockImplementation((url: string) =>
+      url === '/api/deal-analysis' ? Promise.resolve(analysisWith('partial')) : Promise.resolve({}));
+    renderScreen();
+
+    await screen.findAllByText('부품 단가(중앙)');
+    // 20,000,000(확정) 이 뜨고 73,691,235(AI 원본) 는 단가 자리에 뜨지 않는다.
+    expect(screen.getAllByText(/20,000,000/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/73,691,235/)).toBeNull();
+  });
+
+  it('검증 요약과 사유, 백엔드 note 를 함께 보여 준다', async () => {
+    post.mockImplementation((url: string) =>
+      url === '/api/deal-analysis' ? Promise.resolve(analysisWith('untrusted')) : Promise.resolve({}));
+    renderScreen();
+
+    await screen.findAllByText(/규격서와 대조되지 않아 단가 미확정/);
+    expect(screen.getAllByText(/규격서 근거 15%/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/총액 반영 1\/2행/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/일부 행 가격 미확인/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/추정된 부품이 규격서 내용과 일치하지 않아/).length).toBeGreaterThan(0);
+  });
+
+  it('규격서로 확인되지 않은 문서는 문서종과 함께 미확인으로 표시한다', async () => {
+    post.mockImplementation((url: string) =>
+      url === '/api/deal-analysis' ? Promise.resolve(analysisWith('untrusted')) : Promise.resolve({}));
+    renderScreen();
+
+    await screen.findAllByText(/공고문/);
+    expect(screen.getAllByText('미확인').length).toBeGreaterThan(0);
+  });
+
+  it('첨부를 규격서로 지목하면 specFileUrl 을 실어 다시 분석한다', async () => {
+    post.mockImplementation((url: string) =>
+      url === '/api/deal-analysis' ? Promise.resolve(analysisWith('partial')) : Promise.resolve({}));
+    renderScreen();
+
+    const pick = await screen.findByRole('button', { name: '이 파일로 분석' });
+    fireEvent.click(pick);
+
+    await waitFor(() => {
+      const hit = post.mock.calls
+        .filter(([url]) => url === '/api/deal-analysis')
+        .some(([, body]) => (body as { specFileUrl?: string; deep?: boolean }).specFileUrl
+          === 'https://files.example/spec.hwp');
+      expect(hit).toBe(true);
+    });
+    // 지목하면 얕은 분석으로는 의미가 없다 — deep 을 켜서 보낸다.
+    const withPick = post.mock.calls
+      .filter(([url]) => url === '/api/deal-analysis')
+      .map(([, body]) => body as { specFileUrl?: string; deep?: boolean })
+      .find((b) => b.specFileUrl);
+    expect(withPick?.deep).toBe(true);
+  });
+
+  it('같은 첨부를 다시 누르면 지목이 풀려 자동 선택으로 돌아간다', async () => {
+    post.mockImplementation((url: string) =>
+      url === '/api/deal-analysis' ? Promise.resolve(analysisWith('partial')) : Promise.resolve({}));
+    renderScreen();
+
+    fireEvent.click(await screen.findByRole('button', { name: '이 파일로 분석' }));
+    const toggled = await screen.findByRole('button', { name: '✓ 규격서로 지정됨' });
+    expect(toggled).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(toggled);
+    await screen.findByRole('button', { name: '이 파일로 분석' });
   });
 });
