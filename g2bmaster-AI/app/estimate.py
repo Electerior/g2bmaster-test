@@ -20,6 +20,8 @@ import asyncio
 import json
 import re
 
+from . import discover
+from .errors import AiFailure
 from .itmaya import load_index as _load_index, _num  # noqa: F401 (_num: 색인 로더와 함께 이전)
 from .llm.client import lms_chat, loaded_model
 from .part_resolver import derive_product_identity, quote_matches_identity
@@ -170,9 +172,13 @@ PART_PROMPT = """너는 조달 규격서에서 하드웨어 부품 구성을 뽑
 - category: CPU, GPU, RAM, SSD, HDD, 메인보드, 파워, 케이스, 쿨러, 네트워크 중 하나
 - name: 다나와에서 검색할 구체 모델명(예: "NVIDIA H200 141GB"). 모델이 없으면 사양 그대로.
 - qty: 수량(정수), 없으면 1
+- named: 규격서에 제품명·모델명이 **적혀 있으면** true, 사양만 있어 네가 추론했으면 false
+- evidence: 이 부품의 근거가 된 **규격서 원문 한 줄을 그대로 복사**한다.
+  요약하거나 바꿔 쓰지 마라. 원문에 없는 문장을 쓰면 그 부품은 버려진다.
 소프트웨어·용역·설치·보증은 부품이 아니다.
 JSON 배열 하나로만 답한다. 없으면 [].
-[{"category":"GPU","name":"NVIDIA H200 141GB","qty":3}]"""
+[{"category":"GPU","name":"NVIDIA H200 141GB","qty":3,"named":true,
+  "evidence":"GPU: NVIDIA H200 141GB 3장"}]"""
 
 
 def _parse_array(text: str) -> list[dict]:
@@ -204,8 +210,39 @@ async def _extract_parts(spec_text: str) -> list[dict]:
             qty = max(1, int(e.get("qty") or 1))
         except (TypeError, ValueError):
             qty = 1
-        parts.append({"category": cat, "name": name, "qty": qty})
+        # `named`·`evidence` 는 우리가 판정에 쓰지 않는다 — 백엔드가 규격서 원문과 대조할
+        # 재료다(경계 계약 §4: AI 가 자기 응답을 자기가 검증하면 검증이 아니다).
+        evidence = str(e.get("evidence") or "").strip()[:300]
+        parts.append({"category": cat, "name": name, "qty": qty,
+                      "named": bool(e.get("named")), "evidence": evidence})
     return parts
+
+
+async def _resolve_spec_only(part: dict) -> dict:
+    """사양만 있는 부품(설계 2번)을 탐색으로 모델명까지 끌어올린다.
+
+    쇼핑몰 검색창은 사양을 못 읽는다. 탐색이 모델을 찾아내면 그 이름으로 값을 묻고,
+    못 찾으면 원래 이름 그대로 둔다 — 이 단계는 <b>이름을 바꿀 뿐 가격을 만들지 않는다</b>.
+    """
+    # 판단 기준은 `named` 하나다. `derive_product_identity(...)["strong"]` 을 쓰면 안 된다 —
+    # 사양 문자열에서 `DDR5`·`SP5`·`2U` 를 모델명으로 오인해(실측) 탐색이 통째로 건너뛰어진다.
+    # 규격서가 제품명을 적었는지는 규격서를 읽은 쪽만 안다.
+    if part.get("named") or not discover.enabled():
+        return part
+    try:
+        found = await discover.discover_model(part["name"], part["category"])
+    except AiFailure:
+        return part          # 탐색 실패는 가격 실패가 아니다
+    if found.get("status") == "search-unavailable":
+        # 탐색기가 막혔다. 이름을 못 바꾼 채 진행하되 그 사실을 남긴다 — 남기지 않으면
+        # "규격서에 없는 부품"과 "탐색이 죽어서 못 찾은 부품"이 화면에서 구분되지 않는다.
+        return {**part, "searchUnavailable": True,
+                "suspendedEngines": found.get("suspendedEngines", [])}
+    if found.get("status") != "found" or not found.get("model"):
+        return part
+    return {**part, "name": found["model"], "discoveredFrom": part["name"],
+            "discovery": {"model": found["model"], "votes": found.get("modelVotes", 0),
+                          "shopLinks": found.get("shopLinks", [])[:3]}}
 
 
 async def _price_part(part: dict) -> dict:
@@ -242,13 +279,21 @@ async def _price_part(part: dict) -> dict:
     return {"category": part["category"], "option": part["name"], "product": cheapest["name"],
             "qty": part["qty"], "low": prices[0], "high": prices[-1],
             "inferred": not identity["strong"], "role": "part",
-            "source": cheapest.get("source", "danawa")}
+            "source": cheapest.get("source", "danawa"),
+            # 백엔드가 규격서 원문과 대조할 재료. 우리는 판정하지 않는다.
+            "named": bool(part.get("named")), "evidence": part.get("evidence", ""),
+            "discoveredFrom": part.get("discoveredFrom"), "discovery": part.get("discovery"),
+            "searchUnavailable": bool(part.get("searchUnavailable"))}
 
 
 async def _estimate_from_web(spec_text: str, item_name: str = "") -> dict:
     parts = await _extract_parts(spec_text)
     if not parts:
         return {"matched": False, "reason": "규격서에서 가격을 매길 하드웨어 부품을 찾지 못했습니다."}
+
+    # 설계 2번 — 사양만 적힌 부품은 값을 묻기 전에 모델명부터 알아낸다.
+    # 이 단계가 없으면 사양 문자열이 그대로 쇼핑몰 검색어가 되어 엉뚱한 물건이 최저가로 앉는다.
+    parts = list(await asyncio.gather(*(_resolve_spec_only(p) for p in parts)))
 
     # 완제품 판정 — 이 부품 구성이 "완본체를 사는 것"이면 부품 합보다 완제품 최저가가 맞다.
     # 부품 가격 조회와 병렬로 돌린다(둘 다 다나와를 치지만 독립적이다).

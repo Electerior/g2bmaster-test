@@ -48,8 +48,10 @@ def env_defaults() -> dict:
         "llmTopP": os.getenv("LLM_TOP_P") or "0.95",
         "llmMaxTokens": os.getenv("LLM_MAX_TOKENS") or "8192",
         "llmContextWindow": os.getenv("LLM_CONTEXT_WINDOW") or "32768",
-        "searchProvider": os.getenv("SEARCH_PROVIDER") or "studyweb",
-        "searchUrl": os.getenv("STUDYWEB_URL") or "http://localhost:8787",
+        # studyweb 은 전용 스크래퍼로 대체돼 사라졌다. 이 슬롯은 이제 "탐색기"용이다 —
+        # searxng 로 두면 사양→모델 탐색(설계 2번)이 켜진다. 가격은 여전히 전용 파서가 매긴다.
+        "searchProvider": os.getenv("SEARCH_PROVIDER") or "searxng",
+        "searchUrl": os.getenv("SEARCH_URL") or os.getenv("STUDYWEB_URL") or "http://localhost:8888",
         "searchKey": os.getenv("STUDYWEB_API_KEY") or "",
         "searchPlatforms": os.getenv("SEARCH_PLATFORMS") or DEFAULT_PLATFORMS,
         "pricePrompt": os.getenv("PRICE_PROMPT") or "",
