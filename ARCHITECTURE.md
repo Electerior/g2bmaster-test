@@ -119,7 +119,7 @@ com.electerior.g2bmaster/
 ```
 server.py           진입점 — uvicorn app.main:app (HOST/PORT, AI_RELOAD)
 app/
-  main.py           HTTP 표면 전체(라우트 15개) · 예외 핸들러 4종 · 비밀값 미들웨어
+  main.py           HTTP 표면 전체(라우트 16개) · 예외 핸들러 4종 · 비밀값 미들웨어
   config.py         설정 우선순위 data/ai-config.json > 환경변수 > 기본값 (원본과 동일)
   errors.py         실패 분류의 단일 출처 — FAILURES 표
   prompts.py        프롬프트 본문 + 버전 (ITEM_SUMMARY_PROMPT_VERSION, PROMPT_VERSIONS)
@@ -390,7 +390,7 @@ IP 리터럴 금지, 호스트가 `g2b.go.kr|data.go.kr|d2b.go.kr|naramarket.go.
 > backend README 에 적힌 "현재 27개"는 낡았다. 색인 검색·단가 카탈로그·시장정보가 붙으면서
 > 41개가 됐다. **지금 뜬 프로세스가 제공하는 전부는 언제나 Swagger 가 진실이다.**
 
-### 6-2. AI 서비스 (`app/main.py` — 15개)
+### 6-2. AI 서비스 (`app/main.py` — 16개)
 
 | 메서드 | 경로 | 상태 |
 |---|---|---|
@@ -400,7 +400,7 @@ IP 리터럴 금지, 호스트가 `g2b.go.kr|data.go.kr|d2b.go.kr|naramarket.go.
 | GET | `/api/ai/capacity` | ✅ 헬스체크 후 `{capacity, workers}` |
 | GET | `/api/llm/models` | ✅ 모델 목록·도달 여부 |
 | POST | `/api/embed` | ✅ ML 스택 없으면 503 `EMBEDDING_UNAVAILABLE` |
-| POST | `/api/price/resolve` | ✅ 다나와·에누리·아이티마야 애그리게이터 |
+| POST | `/api/price/resolve` | ✅ 다나와·에누리·아이티마야 애그리게이터. 요청 필드는 **`itemName`** 이다(`name` 을 주면 400 `BAD_REQUEST`) |
 | POST | `/api/price/url` | ✅ 다나와 `pcode`·에누리 `modelno` 화이트리스트, 그 밖은 `UNSUPPORTED_SOURCE` |
 | POST | `/api/estimate-unit-cost` | ✅ 규격서 → 부품 추출 → 단가 → 원가 추정 |
 | POST | `/api/prebuilt-comparables` | ✅ 완제품 판정 + 유사 완제품 |
@@ -485,7 +485,8 @@ IP 리터럴 금지, 호스트가 `g2b.go.kr|data.go.kr|d2b.go.kr|naramarket.go.
 
 ### 7-3. 두 저장소가 반드시 합의해야 하는 것
 
-1. **프롬프트 버전** — 현재 `item-summary-2026-08-04-v4`. 분석 결과 재사용 키의 일부다.
+1. **프롬프트 버전** — `promptVersion`(=`item-summary-2026-08-04-v4`)과 엔드포인트별 `versions`
+   맵(`item-summary` / `bid-summary: bid-summary-2026-08-07-v1`). 분석 결과 재사용 키의 일부다.
    **백엔드가 하드코딩하면 안 된다** (`g2b.analysis.prompt-version` 은 비워 두는 것이 정상).
    AI 가 프롬프트를 고쳤는데 백엔드가 모르면 낡은 결과를 계속 재사용한다.
    프롬프트가 **엔드포인트 × 문서종류**로 갈리므로 `versions` 맵을 함께 낸다.
@@ -670,7 +671,36 @@ LLM_WORKERS=http://localhost:1234@1,http://localhost:1235@1,http://localhost:123
 
 ---
 
-## 12. 문서 지도
+## 12. 실측 (2026-08-10, 기동 중인 프로세스 대조)
+
+`GET /v3/api-docs`(OpenAPI 3.1)와 `GET :8000/openapi.json` 을 직접 받아 이 문서와 대조했다.
+
+| 확인 | 결과 |
+|---|---|
+| 백엔드 표면 | **34 paths / 41 operations** — §6-1 의 41개와 경로·메서드까지 일치 |
+| `@RequireAppAuth` | Swagger 자물쇠 **15개**, `securitySchemes = [appKey, appKeyBearer]` |
+| AI 표면 | **16 operations** — §6-2 와 일치 |
+| 미이식 5종 | 실제로 `501` + `{code:"NOT_PORTED", error, retryable:false, requestId, reason, blockedBy}` |
+| 가격 조회 | `POST /api/price/resolve {itemName:"RTX 5090"}` → 200, `quotes[]` 30건(danawa·enuri) |
+| LLM | LM Studio 도달, `qwen/qwen3.6-35b-a3b` loaded, capacity 1, 15건 처리 / 0 실패 |
+| 백엔드→AI | `/api/system/status` 의 `llm.reachable=true`, `search.embedding.delegated=true` |
+| 색인 | 실데이터 적재됨 (물품 5144 · 공사 3713건, 워터마크 2026-08-07) |
+| `price_catalog` | `itmaya`·`danawa` 행 존재 — ingest 경로가 돈 적이 있다 |
+
+**이 인스턴스는 인증이 꺼져 있다.** `APP_API_KEY` 가 없어 자물쇠가 달린
+`GET /api/saved-notices` 가 키 없이 200 + 실데이터를 준다(§5-2 의 개발 모드).
+`AI_SERVICE_SECRET` 도 비어 있어 AI 도 무인증으로 열린다. **Swagger 의 자물쇠는
+경로가 인증 대상이라는 표시일 뿐, 지금 인증이 걸려 있다는 뜻이 아니다.**
+
+주의할 표현 하나 — `ai-boundary.md` Contract A 는 "한 소스가 실패하면 `degraded=true`"
+라고 적었지만, 실측에서 `itmaya` 가 빠졌는데도 `degraded=false` 였다
+(`searchInfo.misses=[{site:"itmaya", reason:"not-found"}]`). **"검색은 됐는데 0건"은
+실패가 아니기 때문이고, 이는 같은 문서가 `PRICE_SOURCE_BROKEN` 을 설명하며 그은 구분과
+일치한다.** 계약 문구가 느슨할 뿐 동작은 의도대로다.
+
+---
+
+## 13. 문서 지도
 
 | 문서 | 내용 |
 |---|---|

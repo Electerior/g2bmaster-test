@@ -429,6 +429,7 @@ if [[ -n "${FORCE_RESTART}" ]] && ! skipped AI && ! skipped BACKEND && ! skipped
     done
 fi
 free_planned_ports || exit 1
+
 # ── LLM 워커 (4090 4장) — 아직 구현 안 함, 방향만 메모 ────────────────────────
 # 목표: 같은 모델을 카드마다 하나씩 올려 4병렬로 돌린다(현재는 1모델이 4장에 분산돼 parallel=1).
 #
