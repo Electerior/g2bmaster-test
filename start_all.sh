@@ -19,8 +19,15 @@
 # DB 는 docker-compose.yml 의 MySQL 을 기본으로 쓴다(3310). 스크립트가 알아서 띄우므로
 # 자격증명을 넘기지 않아도 된다. 다른 MySQL 을 쓰려면 USE_DOCKER_DB=0 과 MYSQL_* 를 준다.
 #
+# 한 머신에서 작업 트리를 둘 이상 돌릴 때(서로 간섭 없이):
+#   PORT_OFFSET=100 bash start_all.sh     포트 넷을 한꺼번에 옮긴다
+#                                         (AI 8101 · 백엔드 8180 · 프론트 5273 · MySQL 3410)
+#   STACK 이름은 기본이 작업 트리 이름이고, PID 파일과 로그 디렉터리를 그 이름으로 가른다.
+#   MySQL 컨테이너·볼륨은 compose 프로젝트(= 트리 이름)로 이미 갈린다.
+#
 # 자주 쓰는 환경변수:
 #   G2B_SERVICE_KEY   나라장터 OpenAPI 키. 없으면 검색 계열이 503
+#   VITE_DEV_HOST=127.0.0.1 화면을 이 머신에서만 열 때(기본은 0.0.0.0 — 다른 기기에서 접속)
 #   USE_DOCKER_DB=0   compose MySQL 을 쓰지 않고 MYSQL_* 로 준 DB 에 붙는다
 #   MYSQL_USER / MYSQL_PASSWORD / MYSQL_HOST / MYSQL_PORT   외부 DB 를 쓸 때
 
@@ -53,15 +60,29 @@ AI_DIR="${BASE_DIR}/g2bmaster-AI"
 BACKEND_DIR="${BASE_DIR}/g2bmaster-backend"
 FRONTEND_DIR="${BASE_DIR}/g2bmaster-frontend"
 
-PID_FILE="/tmp/g2bmaster_service_pids.txt"
-LOG_DIR="${LOG_DIR:-/tmp/g2bmaster-logs}"
+# ── 스택 격리 ────────────────────────────────────────────────────────────────
+# 한 머신에서 작업 트리를 둘 이상 돌리면 넷이 서로를 밟는다:
+# **포트 · PID 파일 · 로그 디렉터리 · MySQL 컨테이너.**
+#
+# 이 환경에 실제로 두 트리가 동시에 돌고 있었다(/home/user/dev · /home/user/hanbin5).
+# 두 번째 트리는 포트를 손으로 옮겨 쓰고 있었지만(8010·8090), 손으로 옮기면 나머지 셋은
+# 그대로 겹친다 — `kill $(cat PID_FILE)` 이 남의 스택을 내리고, 두 스택의 로그가 같은
+# 파일에 섞여 쓰이고, 두 번째 MySQL 은 컨테이너 이름이 같아 아예 뜨지 못한다.
+#
+# STACK 이름(기본: 작업 트리 이름)이 PID·로그를 가르고, PORT_OFFSET 하나가 포트 넷을 옮긴다:
+#   PORT_OFFSET=100 bash start_all.sh    # AI 8101 · 백엔드 8180 · 프론트 5273 · MySQL 3410
+STACK="${STACK:-$(basename "${BASE_DIR}")}"
+PORT_OFFSET="${PORT_OFFSET:-0}"
+
+PID_FILE="/tmp/g2bmaster_${STACK}_pids.txt"
+LOG_DIR="${LOG_DIR:-/tmp/g2bmaster-logs/${STACK}}"
 LAST_SERVICE_PID=""
 
-AI_PORT="${AI_PORT:-8001}"
-# module_a·module_b 서버. 추론 서비스(8000)와 다른 프로세스다 — 백엔드가 §J 를 프록시한다.
-MODULE_SERVER_PORT="${MODULE_SERVER_PORT:-8001}"
-BACKEND_PORT="${BACKEND_PORT:-8080}"
-FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+AI_PORT="${AI_PORT:-$((8001 + PORT_OFFSET))}"
+# module_a·module_b 서버. 추론 서비스와 다른 프로세스다 — 백엔드가 §J 를 프록시한다.
+MODULE_SERVER_PORT="${MODULE_SERVER_PORT:-$((8001 + PORT_OFFSET))}"
+BACKEND_PORT="${BACKEND_PORT:-$((8080 + PORT_OFFSET))}"
+FRONTEND_PORT="${FRONTEND_PORT:-$((5173 + PORT_OFFSET))}"
 AI_BASE_URL="http://localhost:${AI_PORT}"
 
 # ── 1) 두 저장소가 공유하는 호출자 인증 ──────────────────────────────────────
@@ -247,6 +268,7 @@ check_port() {
             echo "  점유: $(describe_pid "${pid}")" >&2
         done
         echo "  내리고 다시 띄우려면 --force, 그대로 쓰려면 ${skip}=1" >&2
+        echo "  둘을 함께 돌리려면 PORT_OFFSET=100 (포트 넷을 통째로 옮긴다)" >&2
         return 1
     fi
 
@@ -257,6 +279,7 @@ check_port() {
         if ! is_ours "${pid}" && [[ "${FORCE_RESTART}" != "all" ]]; then
             echo "포트 ${port} 을(를) 잡고 있는 것이 이 작업 트리(${BASE_DIR})의 프로세스가 아닙니다." >&2
             echo "  $(describe_pid "${pid}")" >&2
+            echo "  남의 스택을 내리는 대신 PORT_OFFSET=100 으로 옆에 띄우는 편이 낫습니다." >&2
             echo "  그래도 내리려면 --force-all, 건드리지 않으려면 ${skip}=1" >&2
             return 1
         fi
@@ -346,8 +369,9 @@ elif (( use_compose_db )); then
     ( cd "${BASE_DIR}" && docker compose up -d db ) || { echo "compose MySQL 기동 실패." >&2; exit 1; }
 
     # 백엔드는 이 값으로 붙는다. compose 파일의 기본값과 같은 자리다.
+    # 호스트 포트도 스택마다 갈라야 두 트리가 각자 DB 를 띄울 수 있다(compose 가 이 값을 읽는다).
     export MYSQL_HOST="127.0.0.1"
-    export MYSQL_PORT="${MYSQL_PORT:-3310}"
+    export MYSQL_PORT="${MYSQL_PORT:-$((3310 + PORT_OFFSET))}"
     export MYSQL_USER="${MYSQL_USER:-g2b}"
     export MYSQL_PASSWORD="${MYSQL_PASSWORD:-g2b}"
     export MYSQL_DATABASE="${MYSQL_DATABASE:-g2b}"
@@ -546,9 +570,22 @@ if [[ -n "${node_major}" ]] && (( node_major < 20 )); then
     echo "  nvm 등으로 20 이상을 잡은 뒤 다시 실행하는 편이 좋습니다." >&2
 fi
 
+# VITE_DEV_HOST 는 dev 서버의 바인딩 주소다. **기본을 0.0.0.0 으로 둔다.**
+#
+# vite 기본값(127.0.0.1)이면 이 머신 밖에서 화면이 열리지 않는데, 포트는 LISTEN 이라
+# "포트는 열려 있는데 접속이 안 된다"로 보인다 — 이 환경에서 실제로 두 번 그렇게 막혔다.
+# 여기는 원격 개발 박스이고 브라우저는 다른 기기에 있다. 백엔드는 이미 `*:8080`(모든
+# 인터페이스)으로 뜨므로, 화면만 루프백에 묶어 두는 것은 보안이 아니라 사고에 가깝다.
+#
+# 이 머신에서만 열려면 명시적으로 잠근다: VITE_DEV_HOST=127.0.0.1 bash start_all.sh
+# 호스트명(IP 가 아닌 이름)으로 접속해 'Blocked request' 가 뜨면 VITE_ALLOWED_HOSTS 에 넣는다.
 if ! skipped FRONTEND; then
+    # 포트도 넘긴다. 예전에는 vite.config 의 5173 이 고정이라 FRONTEND_PORT 를 바꿔도
+    # dev 서버는 그대로 5173 에 떴고, 헬스체크만 엉뚱한 포트를 두드렸다.
     start_service "g2bmaster-frontend" "${FRONTEND_DIR}" "npm install" "npm run dev" \
-        "VITE_PROXY_TARGET=http://localhost:${BACKEND_PORT}"
+        "VITE_PROXY_TARGET=http://localhost:${BACKEND_PORT}" \
+        "VITE_DEV_HOST=${VITE_DEV_HOST:-0.0.0.0}" \
+        "VITE_DEV_PORT=${FRONTEND_PORT}"
     # 프론트도 기다린다. 예전에는 여기서 바로 아래 상태표로 내려가는 바람에, 200ms 뒤에
     # 멀쩡히 뜨는 vite 를 "응답 없음"으로 찍었다 — 거짓 실패도 거짓 성공만큼 나쁘다.
     # dev 서버에는 헬스 경로가 없으므로 루트가 200 이면 뜬 것으로 본다.
