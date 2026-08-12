@@ -54,6 +54,60 @@ export type EstimatedUnitCost =
       hasBase: boolean;
       /** 모든 행의 가격이 확인됐는가. false 면 일부 행이 미확인(low=null). */
       allPriced?: boolean;
+      /**
+       * 기종(장비 유형)별 구성. 한 규격서가 사무용 PC 20대와 워크스테이션 5대를 함께
+       * 요구하면 여기 둘이 온다.
+       *
+       * <b>`low`·`mid`·`high` 는 여전히 "1대 단가"다</b>(기종이 여럿이면 혼합 단가).
+       * 발주 전체 금액은 `totalMid`·`confirmedTotal` 이다 — 단가에 수량을 곱하는 계산이
+       * 백엔드·화면 양쪽에 있어서 뜻을 바꾸면 조용히 두 번 곱해진다.
+       */
+      units?: Array<{
+        unitId: string;
+        label: string;
+        /** 이 기종을 몇 대 납품하는가. 부품 수량(`breakdown[].qty`)과 다른 축이다. */
+        unitQty: number;
+        /** 대수를 어디서 얻었나. `spec` 은 규격서 원문에서 확인된 것이다. */
+        unitQtyBasis?: 'spec' | 'llm' | 'unconfirmed' | 'clamped';
+        /** 'prebuilt'(완본체) | 'barebone-plus-parts'(몸통+부품) | 'parts'(부품 조달). */
+        form?: 'prebuilt' | 'barebone-plus-parts' | 'parts';
+        /** 이 기종 1대 단가(AI 계산). */
+        low: number;
+        high: number;
+        mid: number;
+        /** 이 기종 전체 = 1대 단가 × 대수. */
+        lineLow: number;
+        lineHigh: number;
+        lineMid: number;
+        hasBase: boolean;
+        /** 몸통으로 세운 제품명. `form='barebone-plus-parts'` 일 때 채워진다. */
+        baseProduct?: string | null;
+        allPriced: boolean;
+        gpuCount: number;
+        priceSource?: string;
+        prebuilt?: {
+          isPrebuilt: boolean;
+          score?: number;
+          reason?: string;
+          comparables?: Array<{ name: string; priceKrw: number; url: string; source?: string }>;
+        };
+        // ── 백엔드 검증 결과 ────────────────────────────────────────────────
+        /** 규격서 대조를 통과한 행만 합산한 이 기종의 1대 단가. */
+        confirmedUnitCost?: number | null;
+        /** 위 값 × 대수. */
+        confirmedLineTotal?: number | null;
+      }>;
+      /** 발주 전체 금액(AI 계산) = Σ(기종 단가 × 대수). */
+      totalLow?: number;
+      totalHigh?: number;
+      totalMid?: number;
+      /** 전체 납품 대수 = Σ unitQty. <b>AI 가 센 사실</b>이라 검증 결과가 덮지 않는다. */
+      totalUnits?: number;
+      /**
+       * 검증이 실제로 세어 낸 대수(백엔드). {@link totalUnits} 와 다르면 일부 기종이
+       * 통째로 빠졌다는 뜻이다 — 두 수가 같은 이름을 쓰면 그 사실이 숨는다.
+       */
+      confirmedUnits?: number;
       breakdown: Array<{
         category: string;
         option: string;
@@ -70,17 +124,58 @@ export type EstimatedUnitCost =
         named?: boolean;
         /** AI 가 근거로 든 규격서 원문 한 줄. 백엔드가 원문과 대조한다. */
         evidence?: string;
+        /**
+         * 수량을 어디서 얻었나. `evidence` 는 규격서 원문에서 개수를 직접 읽은 것이고,
+         * `llm` 은 모델이 센 것이다 — **후자는 확인된 수량이 아니다**(실측에서 자주 틀린다).
+         */
+        qtyBasis?: 'evidence' | 'llm';
+        /**
+         * 같은 자리를 두고 겨룬 다른 후보들. 카탈로그마다 같은 부품을 다르게 불러
+         * (색인 "Genoa 9354 …" vs 웹 "AMD EPYC 9354") 하나로 접은 것이다.
+         * <b>버린 것이 아니라 접어 둔 것이다</b> — 화면에서 비교하고 바꿔 끼울 수 있다.
+         */
+        alternatives?: Array<{
+          option: string;
+          product?: string | null;
+          qty: number;
+          low: number | null;
+          high?: number | null;
+          source?: string;
+          evidence?: string;
+          qtyBasis?: 'evidence' | 'llm';
+          named?: boolean;
+          reason?: string;
+        }>;
         // ── 백엔드 검증 결과 (UnitCostValidator) ──────────────────────────
         /** 이 부품의 근거가 규격서 원문에서 확인됐는가. */
         evidenceInSpec?: boolean;
-        /** 'quote'(근거 문장 대조) | 'token'(모델 토큰 대조). */
-        evidenceBasis?: 'quote' | 'token';
+        /**
+         * 'quote'(근거 문장 대조) | 'token'(모델 토큰 대조) | 'unverifiable' | 'none'.
+         *
+         * `unverifiable` 은 <b>근거가 없다는 뜻이 아니다</b> — 라벨에 대조할 식별자
+         * (용량·모델코드)가 없어 판정 자체를 못 한 것이다("미들타워 케이스"). 이 행은
+         * 총액에서 빠지지 않는다.
+         */
+        evidenceBasis?: 'quote' | 'token' | 'unverifiable' | 'none';
         /** 총액에 반영됐는가. false 면 아래 사유로 빠진 행이다. */
         acceptedForCost?: boolean;
-        /** 'no-evidence-in-spec' | 'category-conflict' | 'zero-priced-row' | 'inferred-row' | 'unpriced'. */
+        /**
+         * 'no-evidence-in-spec' | 'duplicate-row' | 'zero-priced-row' | 'inferred-row' | 'unpriced'.
+         * ('category-conflict' 는 옛 이름 — 저장된 분석 결과에 남아 있다.)
+         */
         rejectReason?: string;
+        /**
+         * 한 자리를 두고 겨룬 행끼리 같은 번호를 갖는다. 이긴 행과 진 행
+         * (`rejectReason='duplicate-row'`)을 짝지어 나란히 보여 주기 위한 것이다.
+         */
+        duplicateGroup?: number;
         /** 사양→모델 탐색기가 막혀 모델을 못 찾았다. "규격서에 없음"과 다른 사건이다. */
         searchUnavailable?: boolean;
+        /** 이 부품이 속한 기종. `units[]` 와 같은 축이다. */
+        unitId?: string;
+        unitLabel?: string;
+        /** 그 기종의 납품 대수. <b>`qty` 와 곱하지 말 것</b> — 합계에서 한 번만 곱한다. */
+        unitQty?: number;
       }>;
       // ── 백엔드 검증 결과 (UnitCostValidator) ────────────────────────────
       /**
@@ -88,8 +183,10 @@ export type EstimatedUnitCost =
        * `deal.unitCostSource` 를 주지 않는다. 참고값으로만 표시할 것.
        */
       costConfidence?: 'confirmed' | 'partial' | 'untrusted';
-      /** 규격서 대조를 통과한 행만 합산한 단가. `untrusted` 면 null. */
+      /** 규격서 대조를 통과한 행만 합산한 <b>1대 단가</b>. `untrusted` 면 null. */
       confirmedMid?: number | null;
+      /** 위 값을 기종별 대수로 곱해 더한 <b>발주 전체 금액</b>. `untrusted` 면 null. */
+      confirmedTotal?: number | null;
       /** 채택된 금액 / 전체 금액. */
       evidenceRatio?: number;
       /** 'not-all-priced' · 'category-conflict:gpu' · 'no-base-system' 등. */
@@ -113,6 +210,11 @@ export interface DealAnalysisResponse {
     productName: string;
     productCode: string;
     quantity: number;
+    /**
+     * 수량을 어디서 얻었나. `spec-units` 는 공고 API 에도 요청에도 수량이 없어서
+     * <b>규격서에서 AI 가 읽은 기종별 대수의 합</b>을 쓴 것이다 — 사람이 덮어쓸 수 있다.
+     */
+    quantitySource?: 'user' | 'notice' | 'spec-units' | null;
     unitPrice: number;
     budget: number;
   };

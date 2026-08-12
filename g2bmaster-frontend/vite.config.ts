@@ -27,7 +27,25 @@ const config: ViteConfigWithTest = {
     },
   },
   server: {
-    port: 5173,
+    port: Number(process.env.VITE_DEV_PORT) || 5173,
+    /*
+     * **포트가 물려 있으면 옆으로 도망가지 않고 멈춘다.** vite 기본값은 5173 이 차 있으면
+     * 조용히 5174 로 올라가는데, 그러면 스크립트의 헬스체크는 5173 에서 "응답 없음"을 보고
+     * 화면은 아무도 모르는 포트에 떠 있게 된다 — 이 머신에서 실제로 그 상태가 됐다
+     * (다른 작업 트리의 dev 서버가 5174 에 밀려 올라가 있었다).
+     */
+    strictPort: true,
+    /*
+     * 바인딩 주소. **vite 기본값(127.0.0.1)을 쓰지 않는다.**
+     *
+     * 여기는 원격 개발 박스이고 브라우저는 다른 기기에 있다. 루프백에 묶으면 LAN·Tailscale
+     * 어느 쪽에서도 연결이 거부되는데 포트는 LISTEN 이라, 화면에서는 "포트는 열려 있는데
+     * 접속이 안 된다"로 보인다 — 이 환경에서 실제로 두 번 그렇게 막혔다. 백엔드는 이미
+     * 모든 인터페이스에 뜨므로 화면만 잠가 두는 것은 보안이 아니라 사고에 가깝다.
+     *
+     * 이 머신에서만 열려면 명시적으로 잠근다: `VITE_DEV_HOST=127.0.0.1 npm run dev`.
+     */
+    host: process.env.VITE_DEV_HOST || '0.0.0.0',
     // Tailscale Funnel 로 외부에 노출할 때 dev 서버가 ts.net Host 헤더를 막지 않게 허용한다.
     // (Vite 6 는 기본적으로 알 수 없는 Host 를 'Blocked request' 로 막는다.)
     // 추가 도메인은 VITE_ALLOWED_HOSTS(콤마 구분)로 넣을 수 있다.

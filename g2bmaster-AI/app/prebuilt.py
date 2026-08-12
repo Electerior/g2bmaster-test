@@ -52,6 +52,8 @@ _SPEC_PRESENT = re.compile(
     r"\b(?=[A-Za-z0-9-]*[A-Za-z])(?=[A-Za-z0-9-]*\d)[A-Za-z0-9-]{3,}\b|\b(?:ATX|M-ATX|MATX|ITX)\b|"
     r"미들\s*타워|미니\s*타워|빅\s*타워|슬림형?", re.I)
 _SET_ITEM = re.compile(r"윈도우|윈도|\bwindows\b|\bMS\s*오피스|한글\s*오피스|키보드|마우스|모니터", re.I)
+#: 품목명이 스스로 부품 조달임을 말하는 낱말. "부품용"·"부품비" 같은 파생도 함께 잡는다.
+_PARTS_ITEM = re.compile(r"부품|자재|조립용|업그레이드|증설용?", re.I)
 _SYSTEM_UNIT = re.compile(r"\d+\s*(?:대|식|세트)(?![가-힣])|\d+\s*SET\b", re.I)
 _ASSEMBLY_SUPPLY = re.compile(r"쿨러|쿨링\s*팬|시스템\s*팬|써멀|서멀|그리스|케이블\s*타이|케이블타이|수랭|공랭", re.I)
 
@@ -111,11 +113,25 @@ def collect_signals(group: dict) -> list[dict]:
 
     sysname = _SYSTEM_ITEM.search(name)
     if sysname:
-        signals.append({"id": "P4", "weight": 2, "evidence": f'품목명이 시스템을 가리킴: "{sysname.group(0).strip()}"'})
+        # 가중치 2→3 (2026-08). 임계(4)를 넘기는 다른 길이 사실상 브랜드 신호(P1 제품코드·P2
+        # 완본체 브랜드, 각 3점)뿐인데, **조달 규격서는 특정 브랜드를 적지 않는다**(담합 소지).
+        # 그래서 "사무용 컴퓨터(본체) 30대 구매" 같은 명백한 완본체 조달이 3점에 걸려 부품
+        # 조달로 처리됐다. 임계를 낮추는 대신 **브랜드 없이도 켜지는 가장 강한 신호**를 올린다 —
+        # 품목명이 "본체·PC·컴퓨터·데스크탑"이면 그것은 정의상 완성된 시스템을 사는 것이다.
+        # 반대 방향(부품 조달 오판)은 N1(조립 부자재 -2)·N2(세밀 -1)가 그대로 막는다.
+        signals.append({"id": "P4", "weight": 3, "evidence": f'품목명이 시스템을 가리킴: "{sysname.group(0).strip()}"'})
     code = find_prebuilt_code(name)
     if code:
         signals.append({"id": "P1", "weight": 3, "code": code, "evidence": f'번들명에 완본체 제품코드: "{code}"'})
-    unspec = structural_roles_unspecified(parts)
+
+    # N1 을 먼저 본다 — P3 와 같은 증거를 반대로 읽기 때문이다.
+    assembly = next((m for p in parts if (m := _ASSEMBLY_SUPPLY.search(strip_inclusion_notes(p)))), None)
+
+    # 구조 부품 미명시(P3)는 "몸통을 통째로 산다"는 신호다. 그런데 <b>조립 부자재를 함께
+    # 발주했다면</b>(N1) 같은 사실이 "직접 조립한다 — 목록이 덜 적혔을 뿐"으로 읽힌다.
+    # 둘을 동시에 세면 조립 부품 발주가 +2 를 얻어 완제품 쪽으로 넘어간다(실측: "데스크탑 PC
+    # 조립용 부품(쿨러·써멀 포함)" 이 임계를 넘었다). 모순되는 읽기는 하나만 채택한다.
+    unspec = None if assembly else structural_roles_unspecified(parts)
     if unspec:
         signals.append({"id": "P3", "weight": 2, "evidence": f"구조 부품 미명시: {' · '.join(unspec)}"})
     builder = find_system_builder([name, *parts])
@@ -131,11 +147,14 @@ def collect_signals(group: dict) -> list[dict]:
     unit = _SYSTEM_UNIT.search(name)
     if unit:
         signals.append({"id": "P7", "weight": 1, "evidence": f'시스템 단위 수량: "{unit.group(0).strip()}"'})
-    for p in parts:
-        m = _ASSEMBLY_SUPPLY.search(strip_inclusion_notes(p))
-        if m:
-            signals.append({"id": "N1", "weight": -2, "evidence": f'조립 부자재 발주: "{m.group(0)}"'})
-            break
+    if assembly:
+        signals.append({"id": "N1", "weight": -2, "evidence": f'조립 부자재 발주: "{assembly.group(0)}"'})
+    # 품목명이 스스로 "부품"이라고 말하면 그것이 가장 직접적인 증거다. P4(품목명이 시스템)와
+    # 정면으로 맞서는 자리라 같은 무게로 둔다 — "데스크탑 PC **조립용 부품**" 같은 이름에서
+    # 앞말만 보고 완본체로 넘어가지 않게 한다.
+    partsword = _PARTS_ITEM.search(name)
+    if partsword:
+        signals.append({"id": "N3", "weight": -3, "evidence": f'품목명이 부품을 가리킴: "{partsword.group(0)}"'})
     if len(parts) >= _DETAILED_COUNT:
         signals.append({"id": "N2", "weight": -1, "evidence": f"부품 항목 {len(parts)}개로 세밀함"})
     return signals
@@ -233,4 +252,23 @@ if __name__ == "__main__":
     # 컴퓨터가 아닌 것 — 모니터
     mon = {"name": "HP E27q G5 QHD 모니터", "components": [{"name": "27인치 IPS 패널"}]}
     assert not classify_prebuilt_bundle(mon)["isPrebuilt"], "모니터는 완제품 PC 가 아니다"
+
+    # ── 브랜드 없는 완본체 조달 (2026-08) ────────────────────────────────────
+    # 조달 규격서는 브랜드를 적지 않는다. P1·P2 없이도 품목명만으로 임계를 넘어야 한다.
+    office = {"name": "사무용 컴퓨터(본체) 30대 구매", "components": [
+        {"name": "i7-14700 이상"}, {"name": "DDR5 32GB"}, {"name": "NVMe 1TB"},
+        {"name": "500W 파워"}, {"name": "미들타워 케이스"}, {"name": "B760 메인보드"}]}
+    assert classify_prebuilt_bundle(office)["isPrebuilt"], "브랜드 없는 완본체 조달을 놓치면 안 된다"
+    assert not any(s["id"] in ("P1", "P2") for s in collect_signals(office)), "브랜드 신호 없이 넘어야 한다"
+
+    # 반대 방향 — 품목명이 시스템을 가리켜도 '부품'이라고 적혀 있으면 부품 조달이다.
+    diy = {"name": "데스크탑 PC 조립용 부품 (쿨러, 써멀그리스 포함)", "components": [
+        {"name": "라이젠 9600X"}, {"name": "RTX 5070"}, {"name": "DDR5 32GB"},
+        {"name": "공랭 쿨러"}, {"name": "써멀그리스"}]}
+    assert not classify_prebuilt_bundle(diy)["isPrebuilt"], "조립용 부품 발주는 완제품이 아니다"
+    diy_ids = {s["id"] for s in collect_signals(diy)}
+    assert "N3" in diy_ids and "N1" in diy_ids, diy_ids
+    assert "P3" not in diy_ids, "조립 부자재를 발주했으면 '구조 미명시'로 읽지 않는다"
+    upgrade = {"name": "컴퓨터 메모리 증설용 부품 구매", "components": [{"name": "DDR5 32GB x 40"}]}
+    assert not classify_prebuilt_bundle(upgrade)["isPrebuilt"], "증설용 부품은 완제품이 아니다"
     print("app/prebuilt.py: OK")

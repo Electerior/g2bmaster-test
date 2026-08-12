@@ -15,7 +15,11 @@
 services:
   db:
     image: mysql:8.0
-    container_name: g2b-mysql-test
+    # **container_name 을 박지 않는다.** 박아 두면 작업 트리가 둘일 때 두 번째 스택의 DB 가
+    # 이름 충돌로 아예 뜨지 못한다 — compose 프로젝트(디렉터리 이름)가 달라도 컨테이너
+    # 이름은 전역이기 때문이다. 이름은 compose 가 프로젝트별로 붙이고(<project>-db-1),
+    # start_all.sh 는 이름을 박지 않고 `docker compose ps -q db` 로 물어본다.
+    # 볼륨도 프로젝트별로 갈리므로(<project>_g2b-mysql-data) 데이터는 스택마다 따로 남는다.
     restart: unless-stopped
     # 백엔드의 application.yml 기본값과 같은 자격증명이다. 한쪽만 바꾸면 붙지 못한다.
     environment:

@@ -27,6 +27,15 @@ _KIND_PATTERNS = {
         # CPU 모델 + 외장 GPU 모델을 한 제목에 = 시스템(브랜드명만으론 못 거른다)
         re.compile(r"(?=.*(?:라이젠|ryzen|코어\s*i|core\s*i|\br[3579]\s*-?\s*\d{4}|\bi[3579]\s*-?\s*\d{4,5}))"
                    r"(?=.*\b(?:rtx|gtx)\s*-?\s*\d{3,4})", re.I),
+        # 같은 논리의 **서버판**. 위 패턴은 소비자 PC 어휘(본체·조립PC·데스크탑)만 겨냥해서
+        # 서버 완제품이 그대로 통과했다 — 실측에서 "ASUS 엔비디아 L40S 48GB GPU서버 ESC4000A
+        # E12 AMD 에픽 EPYC CPU 2U" 5,091만원이 **메인보드 한 장 값**으로 앉았다.
+        # 데이터센터 GPU + 서버 CPU 가 한 제목에 있으면 그것은 부품이 아니라 완성된 서버다.
+        re.compile(r"(?=.*\b(?:h100|h200|a100|a30|a40|l40s?|l4|rtx\s*pro\s*\d{3,4})\b)"
+                   r"(?=.*(?:\bepyc\b|\bxeon\b|제온|에픽))", re.I),
+        # 벤더 완제품 서버 계열명. 이 이름이 붙은 매물은 섀시가 아니라 시스템으로 팔린다.
+        re.compile(r"파워엣지|poweredge|프로라이언트|proliant|thinksystem|씽크시스템|primergy|"
+                   r"apollo\s*\d|superserver", re.I),
     ],
     "중고": [re.compile(r"중고|리퍼|리퍼비시|refurbished|\bused\b", re.I)],
     "렌탈": [re.compile(r"렌탈|임대|대여|리스(?![트크])", re.I)],
@@ -98,7 +107,11 @@ def _conflicting_spec(raw_title: str, specs: list[str]) -> str:
 _KO_RYZEN = re.compile(r"라이젠\s*[3579]?\s*[- ]?(\d{4}[A-Z0-9-]*)", re.I)
 _EN_RYZEN = re.compile(r"\b(?:AMD\s*)?RYZEN\s*[3579]?\s*[- ]?(\d{4}[A-Z0-9-]*)\b", re.I)
 _MANUF = re.compile(r"\b(NVIDIA|AMD|Intel|Samsung|LG|Apple|ASUS|MSI|Dell|HP|Lenovo|GIGABYTE|ASRock|WD|Seagate)\b", re.I)
-_MODEL = re.compile(r"\b(RTX|GTX|RX|ARC|RYZEN|CORE|XEON|EPYC)\s*[- ]?([A-Z]?\d{3,5}[A-Z0-9-]*)\b", re.I)
+# `RTX PRO` 를 먼저 본다 — 뒤의 `RTX` 가 먼저 맞으면 "RTX PRO 6000" 이 "RTX 6000"(구형 Quadro)
+# 으로 뭉개진다. 실측에서는 아예 못 잡아 폴백이 **GDDR7 을 모델로** 삼았고, 그 결과 제목에
+# GDDR7 을 안 적은 정상 매물 30건 중 29건이 탈락했다.
+_MODEL = re.compile(
+    r"\b(RTX\s*PRO|RTX|GTX|RX|ARC|RYZEN|CORE|XEON|EPYC)\s*[- ]?([A-Z]?\d{3,5}[A-Z0-9-]*)\b", re.I)
 _SPECS = re.compile(r"\b\d+(?:\.\d+)?\s*(?:GB|TB|MB|GHz|MHz|W)\b", re.I)
 _GENERIC = re.compile(
     r"\b(?![0-9]+(?:\.[0-9]+)?(?:GB|TB|MB|KB|W|V|A|HZ|MHZ|GHZ|MM|CM|INCH)\b)"
@@ -116,7 +129,8 @@ def derive_product_identity(query: str = "") -> dict:
     model_str = (
         ko.group(1).upper() if ko
         else en.group(1).upper() if en
-        else (model.group(1).upper() + " " + model.group(2).upper()) if model
+        # 계열명 안의 연속 공백은 하나로 줄인다("RTX  PRO" → "RTX PRO"). 토큰 분해가 흔들리지 않게.
+        else (re.sub(r"\s+", " ", model.group(1).upper()) + " " + model.group(2).upper()) if model
         else generic.group(0).upper() if generic
         else "")
     return {

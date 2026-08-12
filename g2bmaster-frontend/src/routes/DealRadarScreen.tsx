@@ -25,7 +25,9 @@ import { fmtMoney } from '@/domain/format';
 import { buildNoticeIndexQuery, useSearchCriteria } from '@/features/search/useSearchCriteria';
 import { EmptyState } from '@/components/feedback/EmptyState';
 import { PriceTable } from '@/features/deal/PriceTable';
-import { priceTotal, rowsFromBreakdown, type PriceRow } from '@/features/deal/priceRows';
+import {
+  orderTotal, priceTotal, rowsFromBreakdown, toSavedRows, type PriceRow,
+} from '@/features/deal/priceRows';
 import '@/features/deal/deal.css';
 
 /** 한 페이지에 붙이는 공고 수. 카드마다 딜 분석을 돌리므로 20 으로 묶고 페이지로 넘긴다. */
@@ -42,10 +44,15 @@ const VERIFY_LABEL: Record<string, string> = {
 function warnLabel(code: string): string {
   const [key, category, resolved] = code.split(':');
   switch (key) {
+    case 'duplicate-row':
+      return '중복 부품 정리';
+    // 옛 이름(카테고리 축으로 판정하던 시절). 저장된 분석 결과에 남아 있어 계속 읽어 준다.
     case 'category-conflict':
       return resolved === 'resolved'
         ? `${category} 중복 정리`
         : `${category} 부품이 서로 다름`;
+    case 'nested-breakdown-unsupported':
+      return '부품 목록 구조 불일치(중첩)';
     case 'not-all-priced':
       return '일부 행 가격 미확인';
     case 'no-base-system':
@@ -64,6 +71,14 @@ function warnLabel(code: string): string {
       return '완제품 번들로 판정';
     case 'discovery-search-unavailable':
       return '부품 탐색 검색 차단됨';
+    case 'part-qty-out-of-range':
+      // 1대에 들어갈 수 없는 수량이다 — 발주 대수를 부품 수량에 곱해 보낸 흔적.
+      return '수량이 1대 기준을 벗어남';
+    case 'bad-price':
+      return '단가 값이 잘못됨';
+    case 'label-not-verifiable':
+      // 근거가 없는 것이 아니라 대조할 식별자가 없는 것이다. 행은 총액에 남아 있다.
+      return '이름으로 대조 불가한 부품 포함';
     default:
       return code;
   }
@@ -273,6 +288,18 @@ function DealCard({
   // 편집 가능한 가격표. AI breakdown 을 초기값으로 두고 사람이 확정한다.
   const [editing, setEditing] = useState(false);
   const [rows, setRows] = useState<PriceRow[]>([]);
+  /*
+   * AI 가 찾은 부품 **전부**(총액에서 빠진 것 포함)를 읽기 전용으로 보여 줄지.
+   * null 이면 자동 — 편집 표가 비어 있을 때(=untrusted 라 미리 채우지 않았거나 전 행이
+   * 탈락했을 때) 펼친다. 이 경우가 바로 "AI 가 부품을 찾았는데 화면에는 아무것도 없다" 였다.
+   */
+  const [showParts, setShowParts] = useState<boolean | null>(null);
+  const allParts = useMemo(
+    () => (est?.matched ? rowsFromBreakdown(est.breakdown, { includeRejected: true }) : []),
+    [est],
+  );
+  const partsOpen = showParts ?? (allParts.length > 0 && rows.length === 0);
+  const candidateCount = allParts.reduce((n, r) => n + (r.alternatives?.length ?? 0), 0);
   // 분석 결과가 오면 표 초기값을 채운다(사람이 아직 안 건드렸을 때만).
   useEffect(() => {
     // 규격서 대조를 통과하지 못한 추정(untrusted)은 표를 미리 채우지 않는다. 채워 두면
@@ -291,8 +318,11 @@ function DealCard({
       insttNm: item.noticeInstitutionName ?? item.demandInstitutionName ?? undefined,
       amount: item.estimatedPrice ?? undefined,
       // 사람이 확정한 가격표를 저장 공고에 함께 넣는다(saved_notice.price_rows).
-      priceRows: rows as unknown as Array<Record<string, unknown>>,
-      priceTotal: priceTotal(rows),
+      // 고르지 않은 후보는 뺀다 — 저장되는 것은 확정한 견적이다.
+      priceRows: toSavedRows(rows),
+      // 저장하는 총액은 **실제 발주 금액**이다(기종별 대수 반영). 기종 축이 없던 시절의
+      // 저장분과 숫자가 달라지지 않는다 — 대수가 1 이면 두 값이 같다.
+      priceTotal: orderTotal(rows),
       // raw 에 공고 원본을 담아 두면 backfill 이 첨부 URL 까지 열어 부품 단가를 추정한다.
       raw: item as unknown as Record<string, unknown>,
     });
@@ -321,9 +351,14 @@ function DealCard({
             {pending ? '분석 중…' : '재검토'}
           </button>
           {est && est.matched ? (
-            <button type="button" className="deal-save" onClick={() => setEditing((v) => !v)}>
-              {editing ? '표 닫기' : '가격표'}
-            </button>
+            <>
+              <button type="button" className="deal-save" onClick={() => setShowParts(!partsOpen)}>
+                {partsOpen ? '부품 닫기' : `부품 ${allParts.length}`}
+              </button>
+              <button type="button" className="deal-save" onClick={() => setEditing((v) => !v)}>
+                {editing ? '표 닫기' : '가격표'}
+              </button>
+            </>
           ) : null}
           <button type="button" className="deal-save" onClick={onSave} disabled={save.isPending || save.isSuccess}>
             {save.isSuccess ? '저장됨' : save.isPending ? '저장 중…' : '저장'}
@@ -349,7 +384,15 @@ function DealCard({
               value={market && market.sampleCount > 0 ? fmtMoney(market.expectedAward) : '표본 없음'}
             />
             {rows.length ? (
-              <Stat label="가격표 합계" value={fmtMoney(priceTotal(rows))} highlight />
+              /*
+               * 기종이 여럿이면 행의 단순 합은 <b>존재하지 않는 장비 한 대</b>의 값이다.
+               * 그때는 대수를 반영한 발주 합계를 내고 라벨로 그 사실을 밝힌다.
+               */
+              <Stat
+                label={orderTotal(rows) === priceTotal(rows) ? '가격표 합계' : '가격표 발주 합계'}
+                value={fmtMoney(orderTotal(rows))}
+                highlight
+              />
             ) : est && est.matched ? (
               // 백엔드가 규격서와 대조해 확정한 값만 강조한다. untrusted 인데 mid 를 크게
               // 띄우면 화면이 검증을 무력화한다 — 손익 계산에도 안 들어가는 숫자다.
@@ -366,10 +409,16 @@ function DealCard({
       {est && est.matched ? (
         <>
           <p className="meta deal-parts">
+            {/* 기종이 여럿이면 그것부터 말한다 — "부품 9종"만 적으면 존재하지 않는
+                장비 한 대의 목록으로 읽힌다. */}
+            {est.units && est.units.length > 1
+              ? `${est.units.length}기종(${est.units.map((u) => `${u.label || u.unitId} ${u.unitQty}대`).join(' · ')}) · `
+              : ''}
             부품 {est.breakdown.filter((b) => b.role !== 'base').length}종
             {est.hasBase ? ' · 베어본 포함' : ''}
             {est.gpuCount ? ` · GPU ${est.gpuCount}장` : ''}
             {est.allPriced === false ? ' · 일부 가격 미확인' : ''}
+            {est.confirmedTotal ? ` · 발주 합계 ${fmtMoney(est.confirmedTotal)}` : ''}
             {est.prebuilt?.isPrebuilt && est.prebuilt.comparables?.length
               ? ` · 완제품 후보 ${est.prebuilt.comparables.length}건(최저 ${fmtMoney(est.prebuilt.comparables[0]?.priceKrw)})`
               : ''}
@@ -383,6 +432,8 @@ function DealCard({
                 ? ` · 규격서 근거 ${Math.round(est.evidenceRatio * 100)}%`
                 : ''}
               {` · 총액 반영 ${est.breakdown.filter((b) => b.acceptedForCost).length}/${est.breakdown.length}행`}
+              {/* 접힌 후보가 몇 개인지 — 숨긴 것이 아니라 고를 수 있다는 사실을 알린다. */}
+              {candidateCount ? ` · 비교 후보 ${candidateCount}개` : ''}
               {est.costWarnings?.length ? ` · ${est.costWarnings.map(warnLabel).join(' · ')}` : ''}
             </p>
           ) : null}
@@ -395,9 +446,21 @@ function DealCard({
           왜 손익이 안 나오는지 알 수 없다. */}
       {analysis?.note ? <p className="meta deal-note">{analysis.note}</p> : null}
 
+      {/* AI 가 규격서에서 찾은 부품 전부. 총액에서 뺀 행도 사유 표식과 함께 보인다 —
+          숫자만 보여 주고 목록을 숨기면 왜 그 값이 나왔는지 확인할 방법이 없다. */}
+      {partsOpen ? (
+        <>
+          <PriceTable rows={allParts} readOnly units={est.units} />
+          <p className="meta">
+            AI 가 규격서에서 찾은 부품 전체입니다. 표식이 붙은 행은 규격서 대조에서 빠진 것이라
+            합계에 들어가지 않았습니다. &apos;가격표&apos;에서 직접 고쳐 확정하세요.
+          </p>
+        </>
+      ) : null}
+
       {editing ? (
         <>
-          <PriceTable rows={rows} onChange={setRows} />
+          <PriceTable rows={rows} onChange={setRows} units={est?.matched ? est.units : undefined} />
           <p className="meta">단가·수량을 고치거나 행을 더해 견적을 확정하세요. &apos;저장&apos;하면 이 표가 공고에 함께 저장됩니다.</p>
         </>
       ) : null}
