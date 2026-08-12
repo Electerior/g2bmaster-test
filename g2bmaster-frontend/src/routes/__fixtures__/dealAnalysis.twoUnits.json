@@ -1,0 +1,472 @@
+{
+  "bidNtceNo": "R26-0001",
+  "score": null,
+  "facts": {
+    "productName": "연구실 전산장비 교체",
+    "productCode": "",
+    "quantity": 25,
+    "quantitySource": "spec-units",
+    "unitPrice": null,
+    "budget": 120000000
+  },
+  "market": {
+    "sampleCount": 0,
+    "rateSampleCount": 0,
+    "medianRate": null,
+    "minRate": null,
+    "maxRate": null,
+    "medianAmountRaw": null,
+    "latestDate": null,
+    "budget": 120000000,
+    "expectedAward": null,
+    "expectedSaving": null,
+    "expectedSavingPct": null,
+    "matchCount": 0,
+    "usedBaseline": false
+  },
+  "opening": null,
+  "deal": {
+    "budget": 120000000,
+    "expectedAward": null,
+    "expectedRate": null,
+    "unitCost": 3076420,
+    "quantity": 25,
+    "cost": 76910500,
+    "hasCost": true,
+    "profitAtBudget": 43089500,
+    "profitAtExpected": null,
+    "profitAtBid": null,
+    "marginPctAtExpected": null,
+    "breakevenBid": 76910500,
+    "bidRate": null,
+    "unitCostSource": "estimated"
+  },
+  "simBidUsed": null,
+  "spec": {
+    "text": "물품구매 규격서\n\n1. 사업명: 연구실 전산장비 교체\n2. 납품 내역\n  가. 사무용 PC (A형) 20대\n     - CPU: Intel Core i5-14400 이상\n     - 메모리: 16GB DDR5 (8GB x 2)\n     - 저장장치: 512GB NVMe SSD\n     - 케이스: 미들타워\n     - 파워: 정격 500W 이상\n  나. 설계용 워크스테이션 (B형) 5대\n     - CPU: Intel Core i5-14400 이상\n     - 메모리: 64GB DDR5\n     - 저장장치: 2TB NVMe SSD\n     - 그래픽카드: NVIDIA RTX 4000 Ada 20GB\n3. 기타\n  - 설치 및 시운전 포함, 무상보증 3년\n  - Windows 11 Pro 정품 라이선스 포함\n",
+    "products": [],
+    "parsedFiles": [
+      {
+        "textLength": 401,
+        "name": "규격서.hwpx"
+      }
+    ],
+    "files": [
+      {
+        "url": "https://x",
+        "name": "규격서.hwpx"
+      }
+    ],
+    "fileEntryCount": 1,
+    "quantityFound": null,
+    "deliveryFound": null,
+    "truncated": false
+  },
+  "estimatedUnitCost": {
+    "matched": true,
+    "low": 2856054,
+    "high": 7086778,
+    "mid": 3696428,
+    "totalLow": 71401350,
+    "totalHigh": 177169450,
+    "totalMid": 92410700,
+    "totalUnits": 25,
+    "gpuCount": 1,
+    "hasBase": false,
+    "allPriced": true,
+    "units": [
+      {
+        "unitId": "A",
+        "label": "사무용 PC (A형)",
+        "unitQty": 20,
+        "unitQtyBasis": "spec",
+        "form": "prebuilt",
+        "low": 1441780,
+        "high": 6074550,
+        "mid": 2298090,
+        "lineLow": 28835600,
+        "lineHigh": 121491000,
+        "lineMid": 45961800,
+        "hasBase": false,
+        "baseProduct": null,
+        "allPriced": true,
+        "gpuCount": 0,
+        "priceSource": "enuri",
+        "prebuilt": {
+          "isPrebuilt": true,
+          "score": 6,
+          "reason": "",
+          "comparables": [
+            {
+              "name": "다나와표준 PC 홈/오피스용 250401",
+              "priceKrw": 549000,
+              "url": "https://prod.danawa.com/info/?pcode=78981251",
+              "source": "danawa"
+            },
+            {
+              "name": "포유컴퓨터 퍼포먼스 PC 41 5500GT",
+              "priceKrw": 626880,
+              "url": "https://prod.danawa.com/info/?pcode=45997538",
+              "source": "danawa"
+            },
+            {
+              "name": "포유컴퓨터 퍼포먼스PC 43 i5 14400",
+              "priceKrw": 865920,
+              "url": "https://www.enuri.com/detail.jsp?modelno=113036165",
+              "source": "enuri"
+            },
+            {
+              "name": "포유컴퓨터 퍼포먼스 PC 42 울트라 코어5 225",
+              "priceKrw": 895680,
+              "url": "https://prod.danawa.com/info/?pcode=21515228",
+              "source": "danawa"
+            },
+            {
+              "name": "포유컴퓨터 퍼포먼스PC 42 울트라 코어5 225",
+              "priceKrw": 984960,
+              "url": "https://www.enuri.com/detail.jsp?modelno=112939827",
+              "source": "enuri"
+            }
+          ]
+        },
+        "confirmedUnitCost": 1523080,
+        "confirmedLineTotal": 30461600
+      },
+      {
+        "unitId": "B",
+        "label": "설계용 워크스테이션 (B형)",
+        "unitQty": 5,
+        "unitQtyBasis": "spec",
+        "form": "prebuilt",
+        "low": 8513150,
+        "high": 11135690,
+        "mid": 9289780,
+        "lineLow": 42565750,
+        "lineHigh": 55678450,
+        "lineMid": 46448900,
+        "hasBase": false,
+        "baseProduct": null,
+        "allPriced": true,
+        "gpuCount": 1,
+        "priceSource": "hybrid",
+        "prebuilt": {
+          "isPrebuilt": true,
+          "score": 6,
+          "reason": "",
+          "comparables": [
+            {
+              "name": "HP Z2 미니 워크스테이션 G1a R MAX PRO 380 데스크탑 PC 설계 A74X0AV",
+              "priceKrw": 2244000,
+              "url": "https://www.enuri.com/move/Redirect.jsp?type=ex&cmd=move_31190874905&pl_no=31190874905",
+              "source": "enuri"
+            },
+            {
+              "name": "HP Z2 워크스테이션 G1i U9-285 데스크탑 고성능 설계 서버 C2BF7PT",
+              "priceKrw": 3044000,
+              "url": "https://www.enuri.com/move/Redirect.jsp?type=ex&cmd=move_29452406264&pl_no=29452406264",
+              "source": "enuri"
+            },
+            {
+              "name": "HP Z2 워크스테이션 G1i U7-265K 데스크탑 고성능 설계 서버 C2BF6PT",
+              "priceKrw": 3500000,
+              "url": "https://www.enuri.com/move/Redirect.jsp?type=ex&cmd=move_29452407790&pl_no=29452407790",
+              "source": "enuri"
+            }
+          ]
+        },
+        "confirmedUnitCost": 9289780,
+        "confirmedLineTotal": 46448900
+      }
+    ],
+    "breakdown": [
+      {
+        "category": "CPU",
+        "option": "i5-14400",
+        "product": "인텔 코어i5-14세대 14400F (랩터레이크 리프레시)",
+        "qty": 1,
+        "low": 223000,
+        "high": 1853730,
+        "mid": 503725,
+        "inferred": false,
+        "role": "part",
+        "source": "enuri",
+        "named": false,
+        "evidence": "- CPU: Intel Core i5-14400 이상",
+        "qtyBasis": "llm",
+        "discoveredFrom": "Intel Core i5-14400 이상",
+        "discovery": {
+          "model": "i5-14400",
+          "votes": 5,
+          "shopLinks": [
+            {
+              "source": "danawa",
+              "sourceId": "32038580",
+              "url": "https://prod.danawa.com/info/?pcode=32038580",
+              "title": "인텔 코어i5-14세대 14400 - 다나와"
+            }
+          ]
+        },
+        "searchUnavailable": false,
+        "unitId": "A",
+        "unitLabel": "사무용 PC (A형)",
+        "unitQty": 20,
+        "evidenceInSpec": true,
+        "evidenceBasis": "quote",
+        "acceptedForCost": true
+      },
+      {
+        "category": "RAM",
+        "option": "ddr5",
+        "product": "ESSENCORE KLEVV DDR5-5600 CL46 AMD 파인인포",
+        "qty": 1,
+        "low": 290000,
+        "high": 1848400,
+        "mid": 667495,
+        "inferred": false,
+        "role": "part",
+        "source": "enuri",
+        "named": false,
+        "evidence": "- 메모리: 16GB DDR5 (8GB x 2)",
+        "qtyBasis": "evidence",
+        "discoveredFrom": "16GB DDR5 (8GB x 2)",
+        "discovery": {
+          "model": "ddr5",
+          "votes": 3,
+          "shopLinks": []
+        },
+        "searchUnavailable": false,
+        "unitId": "A",
+        "unitLabel": "사무용 PC (A형)",
+        "unitQty": 20,
+        "evidenceInSpec": true,
+        "evidenceBasis": "quote",
+        "acceptedForCost": true
+      },
+      {
+        "category": "SSD",
+        "option": "PCle Gen3x4 2280 Internal SSD",
+        "product": "[해외] KingSpec 256GB M.2 NVMe SSD 솔리드 스테이트 드라이브세금포함 정품 PCIe Gen3x4 2280 Internal 2400MB/s",
+        "qty": 1,
+        "low": 173160,
+        "high": 972110,
+        "mid": 351860,
+        "inferred": false,
+        "role": "part",
+        "source": "enuri",
+        "named": false,
+        "evidence": "- 저장장치: 512GB NVMe SSD",
+        "qtyBasis": "llm",
+        "discoveredFrom": "512GB NVMe SSD",
+        "discovery": {
+          "model": "PCle Gen3x4 2280 Internal SSD",
+          "votes": 2,
+          "shopLinks": []
+        },
+        "searchUnavailable": false,
+        "unitId": "A",
+        "unitLabel": "사무용 PC (A형)",
+        "unitQty": 20,
+        "evidenceInSpec": true,
+        "evidenceBasis": "quote",
+        "acceptedForCost": true
+      },
+      {
+        "category": "케이스",
+        "option": "미들타워",
+        "product": "3RSYS R150",
+        "qty": 1,
+        "low": 31310,
+        "high": 676000,
+        "mid": 50700,
+        "inferred": true,
+        "role": "part",
+        "source": "enuri",
+        "named": false,
+        "evidence": "- 케이스: 미들타워",
+        "qtyBasis": "llm",
+        "discoveredFrom": null,
+        "discovery": null,
+        "searchUnavailable": false,
+        "unitId": "A",
+        "unitLabel": "사무용 PC (A형)",
+        "unitQty": 20,
+        "evidenceInSpec": true,
+        "evidenceBasis": "quote",
+        "acceptedForCost": false,
+        "rejectReason": "inferred-row"
+      },
+      {
+        "category": "파워",
+        "option": "정격 500W 이상",
+        "product": "[해외] FSP 트윈스 프로 ATX PS2 1+1 듀얼 모듈 500W 효율성 90 이상 핫스왑 가능 이중화 디지털 파워 서플라이 가",
+        "qty": 1,
+        "low": 724310,
+        "high": 724310,
+        "mid": 724310,
+        "inferred": true,
+        "role": "part",
+        "source": "enuri",
+        "named": false,
+        "evidence": "- 파워: 정격 500W 이상",
+        "qtyBasis": "llm",
+        "discoveredFrom": null,
+        "discovery": null,
+        "searchUnavailable": false,
+        "unitId": "A",
+        "unitLabel": "사무용 PC (A형)",
+        "unitQty": 20,
+        "evidenceInSpec": true,
+        "evidenceBasis": "quote",
+        "acceptedForCost": false,
+        "rejectReason": "inferred-row"
+      },
+      {
+        "category": "GPU",
+        "option": "NVIDIA Quadro RTX 4000 ADA - 6,144 CUDA Core, 192 Tensor Core, 20GB GDDR6, 130W",
+        "product": "421GE-TNRT",
+        "qty": 1,
+        "low": 4039000,
+        "high": 4174000,
+        "inferred": false,
+        "role": "part",
+        "source": "itmaya",
+        "alternatives": [
+          {
+            "option": "NVIDIA RTX 4000 Ada Generation",
+            "product": "NVIDIA Quadro RTX A4000 - Blower, 6,144 CUDA Core, 192 Tensor Core, 16GB GDDR6",
+            "qty": 1,
+            "low": 2413000,
+            "high": 4039000,
+            "source": "itmaya",
+            "evidence": "- 그래픽카드: NVIDIA RTX 4000 Ada 20GB",
+            "qtyBasis": "llm",
+            "named": false,
+            "reason": "same-part-other-catalog"
+          }
+        ],
+        "evidence": "- 그래픽카드: NVIDIA RTX 4000 Ada 20GB",
+        "named": false,
+        "unitId": "B",
+        "unitLabel": "설계용 워크스테이션 (B형)",
+        "unitQty": 5,
+        "evidenceInSpec": true,
+        "evidenceBasis": "quote",
+        "acceptedForCost": true
+      },
+      {
+        "category": "Memory",
+        "option": "64GB DDR5 Registered ECC PC5 5600 (32GB x2)",
+        "product": "ESC4000-E11",
+        "qty": 1,
+        "low": 3770000,
+        "high": 3896000,
+        "inferred": false,
+        "role": "part",
+        "source": "itmaya",
+        "alternatives": [
+          {
+            "option": "ddr5 64gb",
+            "product": "마이크론 Crucial DDR5-5600 CL46 대원씨티에스",
+            "qty": 1,
+            "low": 1250000,
+            "high": 4350000,
+            "source": "enuri",
+            "evidence": "- 메모리: 64GB DDR5",
+            "qtyBasis": "llm",
+            "named": false,
+            "reason": "same-part-other-catalog"
+          }
+        ],
+        "evidence": "- 메모리: 64GB DDR5",
+        "named": false,
+        "unitId": "B",
+        "unitLabel": "설계용 워크스테이션 (B형)",
+        "unitQty": 5,
+        "evidenceInSpec": true,
+        "evidenceBasis": "quote",
+        "acceptedForCost": true
+      },
+      {
+        "category": "CPU",
+        "option": "i5-14400",
+        "product": "인텔 코어i5-14세대 14400F (랩터레이크 리프레시)",
+        "qty": 1,
+        "low": 223000,
+        "high": 1853730,
+        "mid": 503725,
+        "inferred": false,
+        "role": "part",
+        "source": "enuri",
+        "named": false,
+        "evidence": "- CPU: Intel Core i5-14400 이상",
+        "qtyBasis": "llm",
+        "discoveredFrom": "Intel Core i5-14400 이상",
+        "discovery": {
+          "model": "i5-14400",
+          "votes": 5,
+          "shopLinks": [
+            {
+              "source": "danawa",
+              "sourceId": "32038580",
+              "url": "https://prod.danawa.com/info/?pcode=32038580",
+              "title": "인텔 코어i5-14세대 14400 - 다나와"
+            }
+          ]
+        },
+        "searchUnavailable": false,
+        "unitId": "B",
+        "unitLabel": "설계용 워크스테이션 (B형)",
+        "unitQty": 5,
+        "evidenceInSpec": true,
+        "evidenceBasis": "quote",
+        "acceptedForCost": true
+      },
+      {
+        "category": "SSD",
+        "option": "AORUS NVMe Gen4 SSD 2TB",
+        "product": "[해외] 기가바이트 AORUS Gen4 7000s SSD 2TB PCIe 4.0 NVMe M.2 나노카본 코팅 알루미늄 히트싱크 3D TLC NAND GP",
+        "qty": 1,
+        "low": 481150,
+        "high": 1211960,
+        "mid": 846555,
+        "inferred": false,
+        "role": "part",
+        "source": "enuri",
+        "named": false,
+        "evidence": "- 저장장치: 2TB NVMe SSD",
+        "qtyBasis": "llm",
+        "discoveredFrom": "2TB NVMe SSD",
+        "discovery": {
+          "model": "AORUS NVMe Gen4 SSD 2TB",
+          "votes": 2,
+          "shopLinks": []
+        },
+        "searchUnavailable": false,
+        "unitId": "B",
+        "unitLabel": "설계용 워크스테이션 (B형)",
+        "unitQty": 5,
+        "evidenceInSpec": true,
+        "evidenceBasis": "quote",
+        "acceptedForCost": true
+      }
+    ],
+    "currency": "KRW",
+    "priceSource": "hybrid",
+    "prebuilt": {
+      "isPrebuilt": false,
+      "score": 0,
+      "reason": "multi-unit",
+      "comparables": []
+    },
+    "costConfidence": "partial",
+    "confirmedMid": 3076420,
+    "confirmedTotal": 76910500,
+    "evidenceRatio": 0.93,
+    "costWarnings": [
+      "no-base-system",
+      "inferred-row"
+    ],
+    "confirmedUnits": 25
+  },
+  "d2bGw": null
+}

@@ -383,6 +383,16 @@
 .price-table tr.base td { background: var(--accent-soft, #eef4ff); font-weight: 500; }
 .price-table tr.base td:first-child { border-left: 3px solid var(--accent, #3b6fd4); }
 .price-inferred { margin-left: 6px; font-size: 11px; color: var(--text-muted, #8a8a8a); border: 1px solid var(--border, #d0d7de); border-radius: 8px; padding: 0 5px; }
+/* 값의 출처(카탈로그). itmaya 는 파일 색인이라 오래된 값일 수 있어 따로 물들인다. */
+.price-source { margin-left: 6px; font-size: 11px; color: var(--text-muted, #8a8a8a); }
+.price-source::before { content: '· '; }
+
+/* ── 후보 비교 ────────────────────────────────────────────────────────────
+   같은 자리를 두고 겨룬 후보를 버리지 않고 여기 담는다. 어느 카탈로그가 맞는지는
+   사람이 판단할 문제라, 화면은 고르는 수단만 주고 값을 대신 정하지 않는다. */
+.price-alt-pick { display: block; margin-top: 4px; max-width: 100%; padding: 2px 4px; border: 1px solid var(--border, #d0d7de); border-radius: 4px; background: var(--surface, #fff); font-size: 11px; color: var(--text-muted, #8a8a8a); }
+.price-alts { margin: 4px 0 0; padding-left: 14px; font-size: 11px; color: var(--text-muted, #8a8a8a); }
+
 .price-row-del { border: none; background: transparent; color: var(--text-muted, #8a8a8a); font-size: 16px; cursor: pointer; line-height: 1; }
 .price-empty { text-align: center; color: var(--text-muted, #8a8a8a); padding: 12px; }
 .price-add { margin-top: 8px; padding: 5px 12px; border: 1px dashed var(--border, #d0d7de); border-radius: 6px; background: var(--surface, #fff); font-size: 13px; cursor: pointer; }
@@ -397,6 +407,26 @@
 
 .deal-note { margin-top: 4px; color: var(--warn, #9a6700); }
 .deal-specfile { margin-top: 4px; }
+
+/* 기종(장비 유형) 머리 — 한 규격서에 사무용 PC 20대와 워크스테이션 5대가 함께 올 수 있다.
+   묶음 머리에 대수·1대 단가·소계를 함께 적어 "무엇을 몇 대"가 표에서 바로 읽히게 한다. */
+.price-table tr.price-unit-head td {
+  background: var(--surface-muted, #f6f8fa);
+  border-top: 2px solid var(--border, #d0d7de);
+  font-weight: 600;
+}
+.price-unit-name { font-size: 13px; }
+.price-unit-form {
+  margin-left: 6px; font-size: 11px; font-weight: 400; color: var(--accent, #3b6fd4);
+  border: 1px solid currentColor; border-radius: 8px; padding: 0 5px; white-space: nowrap;
+}
+/* 같은 구성의 완제품 후보 — 부품 합 바로 옆에 있어야 어느 쪽이 싼지 비교가 된다. */
+.price-table tr.price-unit-prebuilt td {
+  font-size: 11px; color: var(--text-muted, #8a8a8a); background: var(--surface-muted, #f6f8fa);
+}
+.price-table tr.price-unit-prebuilt a { color: inherit; }
+/* 발주 전체 금액 — 부품 합(1대 기준)과 섞이지 않게 줄을 나눈다. */
+.price-table tfoot tr.price-order-total td { border-top: 1px solid var(--border, #d0d7de); }
 
 /* 총액에서 빠진 행 — 지우지 않고 흐리게 남긴다. 왜 빠졌는지 보여야 사람이 판단한다. */
 .price-table tr.rejected td { opacity: 0.62; }

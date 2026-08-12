@@ -10,6 +10,8 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { NoticeIndexItem } from '@/api/search';
+/** AI 서비스 → 백엔드를 실제로 통과시킨 응답(2026-08-12). 맨 아래 계약 회귀에서 쓴다. */
+import TWO_UNITS from './__fixtures__/dealAnalysis.twoUnits.json';
 
 const get = vi.fn();
 const post = vi.fn();
@@ -266,5 +268,68 @@ describe('DealRadarScreen', () => {
 
     fireEvent.click(toggled);
     await screen.findByRole('button', { name: '이 파일로 분석' });
+  });
+});
+
+/*
+ * 계약 회귀 — 픽스처는 **실제로 돌린 응답을 그대로 받아 적은 것**이다.
+ * (AI 서비스 POST /api/estimate-unit-cost → DealAnalysisService.analyze, 2026-08-12 실행분)
+ *
+ * 손으로 지어낸 응답으로 화면을 시험하면 계약이 어긋나는 순간을 못 잡는다 — 지어낸 쪽이
+ * 화면에 맞춰지기 때문이다. 이 파일은 반대 방향으로 잠근다: 백엔드가 실제로 낸 모양을
+ * 화면이 읽어 낼 수 있는가.
+ */
+describe('DealRadarScreen — 기종별 응답(실제 캡처)', () => {
+  beforeEach(() => {
+    post.mockImplementation((url: string) =>
+      url === '/api/deal-analysis' ? Promise.resolve(TWO_UNITS) : Promise.resolve({}));
+  });
+
+  it('기종과 대수를 요약에 그대로 옮긴다 — "부품 9종"만 적으면 없는 장비 한 대로 읽힌다', async () => {
+    renderScreen();
+    await screen.findAllByText(/2기종\(사무용 PC \(A형\) 20대 · 설계용 워크스테이션 \(B형\) 5대\)/);
+  });
+
+  it('발주 합계를 보여 준다 — 기종이 여럿이면 행의 단순 합은 없는 장비 한 대의 값이다', async () => {
+    renderScreen();
+    // 검증 단가 3,076,420원 × 25대 = 76,910,500원.
+    await screen.findAllByText(/발주 합계 76,910,500원/);
+    // 요약 Stat 도 대수를 반영한 값으로 바뀌고, 라벨이 그 사실을 밝힌다.
+    expect(screen.getAllByText('가격표 발주 합계').length).toBeGreaterThan(0);
+  });
+
+  /** 부품표는 기본으로 접혀 있다 — 펼치는 버튼을 눌러야 표가 그려진다. */
+  async function openParts() {
+    const toggle = await screen.findAllByRole('button', { name: /^부품 \d+$/ });
+    fireEvent.click(toggle[0]);
+  }
+
+  it('부품표가 기종별로 갈리고 기종마다 대수·1대 단가가 선다', async () => {
+    renderScreen();
+    await openParts();
+
+    expect(screen.getAllByText('사무용 PC (A형)').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('설계용 워크스테이션 (B형)').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('20대').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('5대').length).toBeGreaterThan(0);
+    // 같은 CPU 가 두 기종에 들어가도 양쪽 다 산다(예전에는 한쪽이 중복으로 삭제됐다).
+    // 표에 뜨는 이름은 규격서 문구가 아니라 실제로 값을 매긴 상품명이다.
+    expect(screen.getAllByText(/인텔 코어i5-14세대 14400F/).length).toBe(2);
+  });
+
+  it('같은 구성의 완제품 후보를 부품 옆에 붙인다 — 비교하려면 같이 있어야 한다', async () => {
+    renderScreen();
+    await openParts();
+
+    const link = await screen.findAllByRole('link', { name: /다나와표준 PC 홈\/오피스용/ });
+    expect(link[0]).toHaveAttribute('href', expect.stringContaining('prod.danawa.com'));
+    expect(screen.getAllByText(/549,000원/).length).toBeGreaterThan(0);
+  });
+
+  it('공고에 수량이 없으면 규격서에서 읽은 대수를 쓰고 그 출처를 남긴다', async () => {
+    renderScreen();
+    await screen.findAllByText(/2기종/);
+    expect(TWO_UNITS.facts.quantitySource).toBe('spec-units');
+    expect(TWO_UNITS.deal.cost).toBe(TWO_UNITS.estimatedUnitCost.confirmedTotal);
   });
 });
