@@ -60,6 +60,18 @@ public class MarketIntelController {
 
 	private static final Logger log = LoggerFactory.getLogger(MarketIntelController.class);
 
+	/**
+	 * 저장된 deep 분석 결과의 <b>모양</b> 버전. 재사용 캐시 키의 일부다({@link #hashInput}).
+	 *
+	 * <p>응답 구조가 바뀌면 <b>반드시 함께 올린다.</b> 안 올리면 이미 분석된 공고는 새 코드가
+	 * 배포돼도 옛 구조를 계속 낸다 — 코드가 적용됐는지 화면으로는 알 수 없게 된다.
+	 *
+	 * <p>{@code unit-axis}: 부품 단가가 기종(unit)별로 갈리고 {@code units[]}·{@code totalUnits}·
+	 * {@code confirmedTotal} 이 생긴 판(2026-08). {@code b}: 검증이 센 대수를
+	 * {@code confirmedUnits} 로 분리해 AI 가 낸 {@code totalUnits}(사실)를 덮지 않게 한 판.
+	 */
+	static final String ANALYSIS_SCHEMA_VERSION = "unit-axis-2026-08b";
+
 	private final MarketIntelService service;
 	private final DealAnalysisService dealAnalysis;
 	private final DocumentTextExtractor textExtractor;
@@ -347,6 +359,10 @@ public class MarketIntelController {
 	private String hashInput(Map<String, Object> item, Map<String, Object> req) {
 		Map<String, Object> key = new LinkedHashMap<>();
 		key.put("item", item);
+		// 응답 <b>모양</b>이 바뀌면 저장분은 낡은 것이다. 이 값이 키에 없으면 예전에 분석한
+		// 공고는 `forceRefresh` 를 누르기 전까지 <b>영원히 옛 구조</b>를 낸다 — 코드는 배포됐는데
+		// 화면에는 아무 변화가 없는 상태가 되고, 아무도 그것을 눈치채지 못한다.
+		key.put("schema", ANALYSIS_SCHEMA_VERSION);
 		for (String field : new String[] {"bidPrice", "unitCost", "quantity", "deep", "include"}) {
 			key.put(field, req.get(field));
 		}

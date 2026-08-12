@@ -60,10 +60,27 @@ public class DealAnalysisService {
 		BigDecimal unitCost = Numbers.toNumber(opt.unitCost());
 		BigDecimal unitPrice = firstNumber(it, "prdctUprc", "unitPrice");
 
+		// 단가 검증을 먼저 돌린다 — 규격서가 대수를 말해 주기 때문이다(아래 quantity 보정).
+		// 추정 단가는 규격서 원문 대조를 통과해야 쓴다: 근거 없는 부품으로 선 단가는 화면에서
+		// 정상적인 숫자로 보이고 그대로 손익·마진이 된다.
+		UnitCostValidator.Verdict costVerdict =
+				UnitCostValidator.validate(estimatedUnitCost, spec == null ? null : spec.text());
+
+		// 공고 API 도 요청도 수량을 안 줄 때가 많다. 그러면 원가가 아예 안 나온다 —
+		// 그런데 <b>규격서에는 "30대"라고 적혀 있고</b> AI 가 그것을 기종별 대수로 뽑아 왔다.
+		// 그 수를 쓰되 어디서 온 수인지 함께 알린다(사람이 덮어쓸 수 있어야 한다).
+		String quantitySource = quantity != null
+				? (Numbers.toNumber(opt.quantity()) != null ? "user" : "notice") : null;
+		if (quantity == null && costVerdict.confirmedTotal() != null && costVerdict.totalUnits() > 0) {
+			quantity = BigDecimal.valueOf(costVerdict.totalUnits());
+			quantitySource = "spec-units";
+		}
+
 		Map<String, Object> facts = new LinkedHashMap<>();
 		facts.put("productName", productName == null ? "" : productName);
 		facts.put("productCode", productCode == null ? "" : productCode);
 		facts.put("quantity", quantity);
+		facts.put("quantitySource", quantitySource);
 		facts.put("unitPrice", unitPrice);
 		facts.put("budget", budget);
 
@@ -77,10 +94,6 @@ public class DealAnalysisService {
 
 		// ── deal — 이 시세에서 이 원가로 남는가 ─────────────────────────────
 		// 부품 추정으로 단가가 나왔으면 그것을 우선(source=estimated), 사용자 입력이면 user.
-		// 단, 추정 단가는 규격서 원문 대조를 통과해야 쓴다 — 근거 없는 부품으로 선 단가는
-		// 화면에서 정상적인 숫자로 보이고 그대로 손익·마진이 된다.
-		UnitCostValidator.Verdict costVerdict =
-				UnitCostValidator.validate(estimatedUnitCost, spec == null ? null : spec.text());
 		BigDecimal estimatedUnit = costVerdict.confirmedMid();
 		BigDecimal effectiveUnit = coalesce(unitCost, estimatedUnit);
 		String unitCostSource = unitCost != null ? "user" : (estimatedUnit != null ? "estimated" : null);
@@ -127,6 +140,7 @@ public class DealAnalysisService {
 	 * {@code evidenceRatio} · {@code costWarnings[]}, 그리고 {@code breakdown} 각 행의
 	 * {@code evidenceInSpec}·{@code acceptedForCost}·{@code rejectReason}.
 	 */
+	@SuppressWarnings("unchecked")
 	private static Map<String, Object> annotate(Map<String, Object> estimated,
 			UnitCostValidator.Verdict verdict) {
 		if (estimated == null) {
@@ -135,12 +149,42 @@ public class DealAnalysisService {
 		Map<String, Object> out = new LinkedHashMap<>(estimated);
 		out.put("costConfidence", verdict.confidence().name().toLowerCase(java.util.Locale.ROOT));
 		out.put("confirmedMid", verdict.confirmedMid());
+		// 발주 전체 합. `confirmedMid` 는 1대 단가라 화면이 대수를 다시 곱해야 하는데,
+		// 기종이 여럿이면 그 곱셈이 성립하지 않는다(기종마다 대수가 다르다).
+		out.put("confirmedTotal", verdict.confirmedTotal());
+		// **AI 가 실어 보낸 `totalUnits` 를 덮지 않는다.** 그것은 "몇 대를 납품하는가"라는
+		// 사실이고, 이 값은 "검증이 몇 대분을 세었는가"라는 판정이다. 예전엔 같은 이름으로
+		// 덮어써서, 미확정(untrusted)일 때 화면이 `units[]` 는 20대+5대인데 `totalUnits` 는
+		// 1 인 응답을 받았다 — 사실이 판정에 지워진 것이다.
+		out.put("confirmedUnits", verdict.totalUnits());
 		out.put("evidenceRatio", Math.round(verdict.evidenceRatio() * 100) / 100.0);
 		out.put("costWarnings", verdict.warnings());
 		if (!verdict.rows().isEmpty()) {
 			out.put("breakdown", verdict.rows());
 		}
+		// 기종별 확정 단가를 그 기종 옆에 붙인다 — 혼합 단가 하나만 주면 어느 기종이
+		// 비싼지, 어느 기종이 검증에서 깎였는지 화면에서 알 수 없다.
+		if (out.get("units") instanceof List<?> units) {
+			List<Map<String, Object>> annotated = new java.util.ArrayList<>();
+			for (Object raw : units) {
+				if (!(raw instanceof Map)) {
+					continue;
+				}
+				Map<String, Object> unit = new LinkedHashMap<>((Map<String, Object>) raw);
+				BigDecimal confirmed = verdict.confirmedByUnit().get(String.valueOf(unit.get("unitId")));
+				unit.put("confirmedUnitCost", confirmed);
+				unit.put("confirmedLineTotal", confirmed == null ? null
+						: confirmed.multiply(BigDecimal.valueOf(unitQty(unit))));
+				annotated.add(unit);
+			}
+			out.put("units", annotated);
+		}
 		return out;
+	}
+
+	private static long unitQty(Map<String, Object> unit) {
+		BigDecimal qty = Numbers.toNumber(unit.get("unitQty"));
+		return qty == null || qty.signum() <= 0 ? 1 : qty.longValue();
 	}
 
 	// ── 응답 매핑 (필드명은 프론트 계약) ─────────────────────────────────────
